@@ -212,6 +212,7 @@
 #define RimOffect 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
 #define MAX_DISTANCE 12 // [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32]
 #define FALLOFF_CURVE 0.0 // [-10.0 -9.0 -8.0 -7.0 -6.0 -5.0 -4.0 -3.0 -2.0 -1.0 0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
+#define RAMP_VALUE 0.0001
 uniform sampler2D depthtex0;
 
 uniform sampler2D colortex0;
@@ -225,6 +226,7 @@ const float mulReduce = 1.0 / 8.0;
 const float minReduce = 1.0 / 128.;
 const float maxSpan = 8.0;
 
+uniform mat4 gbufferProjectionInverse;
 in vec2 texcoord;
 
 /* DRAWBUFFERS:0 */
@@ -239,21 +241,26 @@ float screenSpaceToViewSpace(float depth, mat4 projInv)
 void main() {
 	color = texture(colortex0, texcoord);
    float depth = texture(depthtex0, texcoord).r;
+  // depth = screenSpaceToViewSpace(depth, gbufferProjectionInverse);
    float depthLeft = texture(depthtex0, vec2(texcoord.x + RimOffect,texcoord.y)).r;
+  // depthLeft = screenSpaceToViewSpace(depthLeft, gbufferProjectionInverse);
    float depthRight = texture(depthtex0, vec2(texcoord.x - RimOffect,texcoord.y)).r;
+  // depthRight = screenSpaceToViewSpace(depthRight, gbufferProjectionInverse);
    float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + RimOffect)).r;
+  // depthUp = screenSpaceToViewSpace(depthUp, gbufferProjectionInverse);
    float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - RimOffect)).r;
+  // depthDown = screenSpaceToViewSpace(depthDown, gbufferProjectionInverse);
 
-   float depthDifferLeft = depth - depthLeft;
-   float depthDifferRight = depth - depthRight;
-   float depthDifferUp = depth - depthUp;
-   float depthDifferDown = depth - depthDown;
+   float depthDifferLeft = depthLeft - depth;
+   float depthDifferRight = depthRight - depth;
+   float depthDifferUp = depthUp - depth;
+   float depthDifferDown = depthDown - depth;
 
 
    float rimIntensityLeft = step(Threshold,depthDifferLeft);
    float rimIntensityRight = step(Threshold,depthDifferRight);
    float rimIntensityV = max(rimIntensityLeft,rimIntensityRight);
-   if(depthLeft+depthRight <= 0.1 )
+   if(abs(depthDifferLeft+depthDifferRight) <= RAMP_VALUE )
    {
       rimIntensityV = 0;
    }
@@ -262,7 +269,7 @@ void main() {
    float rimIntensityDown = step(Threshold,depthDifferDown);
    float rimIntensityH = max(rimIntensityDown,rimIntensityUp);
 
-   if(depthUp+depthDown <= 0.1 )
+   if(abs(depthDifferUp+depthDifferDown) <= RAMP_VALUE)
    {
       rimIntensityH = 0;
    }
@@ -352,3 +359,14 @@ void main() {
 }
 
 //LZX vscode 2025/03/24
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||--==||||||||||||||||------==||||||||||----------==||||
+//||||--==||||||||||||||------------==||||||------------==||
+//||||--==|||||||||||||---==||||----==||||||--==||||----==||
+//||||--==|||||||||||||---==||||||||||||||||--------------||
+//||||--==|||||||||||||---==||||----==||||||----------==||||
+//||||------------==||||------------==||||||--==||||||||||||
+//||||------------==||||||------==||||||||||--==||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||LZX.Celluloid.Project||||||||||||||||||||
