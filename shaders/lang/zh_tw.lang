@@ -1,4 +1,6 @@
 option.THRESHOLD = 深度差
 option.MAX_DISTANCE.comment = 控制深度差的阈值.
-option.RIM_OFFECT = 偏移量
+option.RIM_OFFECT = 描边宽度
 option.FALLOFF_CURVE.comment = 控制像素的偏移量
+option.OUTLINE_COL = 描边颜色
+option.OUTLINE_COL.commit = 调节描边颜色
