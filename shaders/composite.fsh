@@ -208,7 +208,7 @@
 
 #version 330 compatibility
 
-#define THRESHOLD 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
+#define THRESHOLD 0.0001 // [0.0001 0.0002 0.001 0.002 0.01]
 #define RIM_OFFECT 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
 #define MAX_DISTANCE 12 // [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32]
 #define FALLOFF_CURVE 0.0 // [-10.0 -9.0 -8.0 -7.0 -6.0 -5.0 -4.0 -3.0 -2.0 -1.0 0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
@@ -240,11 +240,10 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rimIntensity1 = step(THRESHOLD,depthDiffer1);
    float rimIntensity2 = step(THRESHOLD,depthDiffer2);
    float rimIntensity = max(rimIntensity1,rimIntensity2);
-   if(abs(depthDiffer1+depthDiffer2) <= RAMP_VALUE )
-   {
-      rimIntensity = 0;
-   }
-   return rimIntensity;
+
+   float isRamp = step(RAMP_VALUE,abs(depthDiffer1+depthDiffer2));
+
+   return min(rimIntensity,isRamp);
 }
 
 
