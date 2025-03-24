@@ -1,0 +1,4 @@
+option.MAX_DISTANCE = Max. Distance (Chunks)
+option.MAX_DISTANCE.comment = The distance at which the color becomes black.
+option.FALLOFF_CURVE = Falloff Curve
+option.FALLOFF_CURVE.comment = Adjusts how different distances map to colors.
