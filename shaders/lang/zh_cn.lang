@@ -1,0 +1,4 @@
+option.THRESHOLD = 深度差
+option.MAX_DISTANCE.comment = 控制深度差的阈值.
+option.RIM_OFFECT = 偏移量
+option.FALLOFF_CURVE.comment = 控制像素的偏移量

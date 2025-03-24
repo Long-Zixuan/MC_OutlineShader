@@ -1,4 +1,4 @@
-option.MAX_DISTANCE = Max. Distance (Chunks)
-option.MAX_DISTANCE.comment = The distance at which the color becomes black.
-option.FALLOFF_CURVE = Falloff Curve
-option.FALLOFF_CURVE.comment = Adjusts how different distances map to colors.
+option.THRESHOLD = Depth difference
+option.MAX_DISTANCE.comment = Control the threshold for depth difference
+option.RIM_OFFECT = offset
+option.FALLOFF_CURVE.comment = Control the offset of pixels
