@@ -208,8 +208,8 @@
 
 #version 330 compatibility
 
-#define Threshold 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
-#define RimOffect 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
+#define THRESHOLD 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
+#define RIM_OFFECT 0.001 // [0.0001 0.0002 0.001 0.002 0.01]
 #define MAX_DISTANCE 12 // [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32]
 #define FALLOFF_CURVE 0.0 // [-10.0 -9.0 -8.0 -7.0 -6.0 -5.0 -4.0 -3.0 -2.0 -1.0 0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
 #define RAMP_VALUE 0.0001
@@ -232,47 +232,34 @@ in vec2 texcoord;
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 color;
 
-float screenSpaceToViewSpace(float depth, mat4 projInv) 
+float getRimIntensity(float depthOft1,float depthOft2,float depth)
 {
-	depth = depth * 2.0 - 1.0;
-	return projInv[3].z / (projInv[2].w * depth + projInv[3].w);
+   float depthDiffer1 = depthOft1 - depth;
+   float depthDiffer2 = depthOft2 - depth;
+
+   float rimIntensity1 = step(THRESHOLD,depthDiffer1);
+   float rimIntensity2 = step(THRESHOLD,depthDiffer2);
+   float rimIntensity = max(rimIntensity1,rimIntensity2);
+   if(abs(depthDiffer1+depthDiffer2) <= RAMP_VALUE )
+   {
+      rimIntensity = 0;
+   }
+   return rimIntensity;
 }
 
-void main() {
+
+void main() 
+{
 	color = texture(colortex0, texcoord);
    float depth = texture(depthtex0, texcoord).r;
-  // depth = screenSpaceToViewSpace(depth, gbufferProjectionInverse);
-   float depthLeft = texture(depthtex0, vec2(texcoord.x + RimOffect,texcoord.y)).r;
-  // depthLeft = screenSpaceToViewSpace(depthLeft, gbufferProjectionInverse);
-   float depthRight = texture(depthtex0, vec2(texcoord.x - RimOffect,texcoord.y)).r;
-  // depthRight = screenSpaceToViewSpace(depthRight, gbufferProjectionInverse);
-   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + RimOffect)).r;
-  // depthUp = screenSpaceToViewSpace(depthUp, gbufferProjectionInverse);
-   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - RimOffect)).r;
-  // depthDown = screenSpaceToViewSpace(depthDown, gbufferProjectionInverse);
+   float depthLeft = texture(depthtex0, vec2(texcoord.x + RIM_OFFECT,texcoord.y)).r;
+   float depthRight = texture(depthtex0, vec2(texcoord.x - RIM_OFFECT,texcoord.y)).r;
+   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + RIM_OFFECT)).r;
+   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - RIM_OFFECT)).r;
 
-   float depthDifferLeft = depthLeft - depth;
-   float depthDifferRight = depthRight - depth;
-   float depthDifferUp = depthUp - depth;
-   float depthDifferDown = depthDown - depth;
+   float rimIntensityV = getRimIntensity(depthLeft,depthRight,depth);
 
-
-   float rimIntensityLeft = step(Threshold,depthDifferLeft);
-   float rimIntensityRight = step(Threshold,depthDifferRight);
-   float rimIntensityV = max(rimIntensityLeft,rimIntensityRight);
-   if(abs(depthDifferLeft+depthDifferRight) <= RAMP_VALUE )
-   {
-      rimIntensityV = 0;
-   }
-
-   float rimIntensityUp = step(Threshold,depthDifferUp);
-   float rimIntensityDown = step(Threshold,depthDifferDown);
-   float rimIntensityH = max(rimIntensityDown,rimIntensityUp);
-
-   if(abs(depthDifferUp+depthDifferDown) <= RAMP_VALUE)
-   {
-      rimIntensityH = 0;
-   }
+   float rimIntensityH = getRimIntensity(depthUp,depthDown,depth);
 
    float rimIntensity = max(rimIntensityV,rimIntensityH);
 
