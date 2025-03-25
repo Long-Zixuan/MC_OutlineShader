@@ -4,7 +4,7 @@
 <details>
   <summary>English</summary>
 <h1>English</h1>
-It's a NPR shader,which based on the original style, which can stroke objects and make the cartoonish more cartoonish  
+It's a NPR shader,which based on the original style, which can add outline for game object and make the graphics more cartoonish  
 You can set outline width and outline color at shader pack settings page
 </details>
 <details>
@@ -16,8 +16,7 @@ You can set outline width and outline color at shader pack settings page
 <details>
   <summary>日本語</summary>
 <h1>日本語</h1>
- これはオリジナルスタイルに基づいたNPRシェーダで、オブジェクトをストロークしてアニメーションをよりアニメーション化することができます  
-シェーダパッケージ設定ページで輪郭の幅と輪郭の色を設定できます  
+これはオリジナルスタイルに基づいたNPRシェーダで、ゲームオブジェクトに輪郭を追加し、グラフィックをよりアニメーション化することができます  
 </details>
 <p align="center">
   <img  src="https://cdn.modrinth.com/data/cached_images/332a1805c84979815f5c0cf8849a520c0db7b3d0.jpeg"> 
