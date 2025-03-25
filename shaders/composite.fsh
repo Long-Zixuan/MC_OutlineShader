@@ -209,9 +209,10 @@
 #version 330 compatibility
 
 #define THRESHOLD 0.0001 // [0.00001 0.0001 0.0002 0.001 0.002 0.01]
-#define RIM_OFFECT 0.001 // [0.0001 0.0002 0.001 0.002 0.003 0.004 0.005 0.01]
+#define RIM_OFFECT 0.001 // [0.0001 0.0002 0.0005 0.001 0.002 0.003 0.004 0.005 0.01]
 #define OUTLINE_COL 0.3 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9]
 #define RAMP_VALUE 0.0001
+#define SCREEN_VALUE 2000
 uniform sampler2D depthtex0;
 
 uniform sampler2D colortex0;
@@ -250,10 +251,10 @@ void main()
 {
 	color = texture(colortex0, texcoord);
    float depth = texture(depthtex0, texcoord).r;
-   float depthLeft = texture(depthtex0, vec2(texcoord.x + RIM_OFFECT,texcoord.y)).r;
-   float depthRight = texture(depthtex0, vec2(texcoord.x - RIM_OFFECT,texcoord.y)).r;
-   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + RIM_OFFECT)).r;
-   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - RIM_OFFECT)).r;
+   float depthLeft = texture(depthtex0, vec2(texcoord.x + RIM_OFFECT / viewWidth * SCREEN_VALUE,texcoord.y)).r;
+   float depthRight = texture(depthtex0, vec2(texcoord.x - RIM_OFFECT / viewWidth * SCREEN_VALUE,texcoord.y )).r;
+   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + RIM_OFFECT / viewHeight * SCREEN_VALUE)).r;
+   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - RIM_OFFECT / viewHeight * SCREEN_VALUE)).r;
 
    float rimIntensityV = getRimIntensity(depthLeft,depthRight,depth);
 
