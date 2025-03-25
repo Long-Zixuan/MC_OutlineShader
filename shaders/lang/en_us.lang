@@ -4,3 +4,5 @@ option.RIM_OFFECT = Outline Width
 option.FALLOFF_CURVE.comment = Control the offset of pixels
 option.OUTLINE_COL = outline color
 option.OUTLINE_COL.commit = Control outline color
+option.PAPER_WORLD = Paper world
+option.PAPER_WORLD.commit = Paper world
