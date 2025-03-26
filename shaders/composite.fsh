@@ -225,6 +225,9 @@ uniform float far;
 #define THRESHOLD 0.0001 // [0.00001 0.0001 0.0002 0.001 0.002 0.01]
 #define RIM_OFFECT 0.001 // [0.0001 0.0002 0.0005 0.001 0.002 0.003 0.004 0.005 0.01]
 #define OUTLINE_COL 0.3 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9]
+#define OUTSIDE  -1
+#define INSIDE 1
+#define OUTLINE_MODE INSIDE // [INSIDE OUTSIDE]
 #define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 uniform sampler2D depthtex0;
@@ -248,8 +251,8 @@ layout(location = 0) out vec4 color;
 
 float getRimIntensity(float depthOft1,float depthOft2,float depth)
 {
-   float depthDiffer1 = depthOft1 - depth;
-   float depthDiffer2 = depthOft2 - depth;
+   float depthDiffer1 = (depthOft1 - depth) * OUTLINE_MODE;
+   float depthDiffer2 = (depthOft2 - depth) * OUTLINE_MODE;
 
    float rimIntensity1 = step(THRESHOLD,depthDiffer1);
    float rimIntensity2 = step(THRESHOLD,depthDiffer2);
