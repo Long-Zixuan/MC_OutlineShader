@@ -1,6 +1,10 @@
 <p align="center">
     <img width src="https://gitee.com/zixuan_long/Img/raw/master/LS3.png">    
 </p>
+<center class="half">
+  <img src="https://gitee.com/zixuan_long/Img/raw/master/support%20iris.png" width="300">
+  <img src="https://gitee.com/zixuan_long/Img/raw/master/support%20optifine.png" width="320">
+</center>
 <details>
   <summary>English</summary>
 <h1>Outline Shader</h1>
