@@ -21,6 +21,8 @@
   <p align="center">
     <img width src="https://cdn.modrinth.com/data/cached_images/34e19ff314a4dcb3e13261aa006a5ca4e4bed853.jpeg">    
    <img width src="https://cdn.modrinth.com/data/cached_images/d483d451c8fb08e87f42bc1215c2f44724ec5a1e.jpeg">
+    <img width src="https://cdn.modrinth.com/data/cached_images/28c1416f85a1d525cb43851f969c3d99b52c5889.jpeg">
+    <img width src="https://cdn.modrinth.com/data/cached_images/758c6c49334cb7894d9b4a4ee384d86b4a7626cc.jpeg">
 </p>
 </details>
 <details>
@@ -40,6 +42,8 @@
 <p align="center">
     <img width src="https://cdn.modrinth.com/data/cached_images/34e19ff314a4dcb3e13261aa006a5ca4e4bed853.jpeg">    
    <img width src="https://cdn.modrinth.com/data/cached_images/a8c30b84c87a408dbcea58e341d5b92e26ee2db9.jpeg">
+      <img width src="https://cdn.modrinth.com/data/cached_images/28c1416f85a1d525cb43851f969c3d99b52c5889.jpeg">
+    <img width src="https://cdn.modrinth.com/data/cached_images/758c6c49334cb7894d9b4a4ee384d86b4a7626cc.jpeg">
 </p>
 </details>
 <!--<details>
