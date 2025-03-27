@@ -2,7 +2,7 @@
     <img width src="https://gitee.com/zixuan_long/Img/raw/master/LS3.png">    
 </p>
 <center class="half">
-  <img src="https://gitee.com/zixuan_long/Img/raw/master/support_iris2.png" width="30%">
+  <img src="https://gitee.com/zixuan_long/Img/raw/master/support_iris2.png" width="25%">
   <img src="https://gitee.com/zixuan_long/Img/raw/master/support_optifine2.png" width="32%">
 </center>
 <details>
