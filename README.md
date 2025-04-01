@@ -10,6 +10,12 @@
 <h1>Outline Shader</h1>
 <p>It's a NPR shader,which based on the original style, which can add outline for game object and make the graphics more cartoonish  </p>
 <p>You can set outline width and outline color at shader pack settings page</p><p>if you turn on the "paper world" option,the world will only have outline</p>
+  <br>
+<br>
+<p>If you like this shader,please buy me a coffee,THANKS!</p>
+<a href="https://ko-fi.com/loongly">
+    <img src="https://gitee.com/zixuan_long/Img/raw/master/buy_me_coffee.png" width="25%">
+</a>
   <h2>Outline</h2>
   <p align="center">
   <img  src="https://cdn.modrinth.com/data/cached_images/332a1805c84979815f5c0cf8849a520c0db7b3d0.jpeg"> 
@@ -31,6 +37,12 @@
 <p>这是一个风格化的光影，可以让MC物体都有描边的光影，使得游戏画面更加卡通  </p>
 <p>您可以在光影包设置中，设置描边宽度和颜色</p>
  <p>如果开启“纸世界”选项，世界将会只有描边</p> 
+  <br>
+<br>
+<p>如果你喜欢这个光影的话，能不能请我喝杯咖啡？感激不尽！</p>
+<a href="https://ko-fi.com/loongly">
+    <img src="https://gitee.com/zixuan_long/Img/raw/master/buy_me_coffee.png" width="25%">
+</a>
   <h2>描边</h2>
     <p align="center">
   <img  src="https://cdn.modrinth.com/data/cached_images/332a1805c84979815f5c0cf8849a520c0db7b3d0.jpeg"> 
