@@ -1,5 +1,5 @@
 <p align="center">
-    <img width src="https://gitee.com/zixuan_long/Img/raw/master/LS3.png">    
+    <img width src="https://gitee.com/zixuan_long/Img/raw/master/LS3_LOW_PIX.png">    
 </p>
 <center class="half">
   <img src="https://gitee.com/zixuan_long/Img/raw/master/support_iris4.png" width="33%">
