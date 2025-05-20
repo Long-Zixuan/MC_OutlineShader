@@ -12,3 +12,7 @@ option.INSIDE = inside
 option.INSIDE.commit = inside
 option.INSIDE = outside
 option.INSIDE.commit = outside
+option.LINEAR_DEPTH= Linear depth(Beta)
+option.LINEAR_DEPTH.comment = linear depth
+option.MAX_DISTANCE = renderer distance
+option.MAX_DISTANCE.comment = Control the maximum distance of the renderer

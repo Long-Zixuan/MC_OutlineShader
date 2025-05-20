@@ -208,9 +208,9 @@
 
 #version 330 compatibility
 
-#define MAX_DISTANCE 12 // [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32]
+#define MAX_DISTANCE 32 // [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 64]
 #define FALLOFF_CURVE 0.0 // [-10.0 -9.0 -8.0 -7.0 -6.0 -5.0 -4.0 -3.0 -2.0 -1.0 0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
-//#define x depthValue
+//#define x linearDepth
 #define a actualMaxDistance
 #define p FALLOFF_CURVE
 
@@ -218,7 +218,7 @@ uniform float far;
 
 #define OFF 0
 #define ON 1
-#define DEPTH_OUTLINE OFF // [OFF ON]
+#define LINEAR_DEPTH OFF // [OFF ON]
 #define PAPER_WORLD OFF // [OFF ON]
 /////
 
@@ -228,7 +228,7 @@ uniform float far;
 #define OUTSIDE  -1
 #define INSIDE 1
 #define OUTLINE_MODE INSIDE // [INSIDE OUTSIDE]
-#define RAMP_VALUE 0.0001
+//#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 uniform sampler2D depthtex0;
 
@@ -257,8 +257,12 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rimIntensity1 = step(THRESHOLD,depthDiffer1);
    float rimIntensity2 = step(THRESHOLD,depthDiffer2);
    float rimIntensity = max(rimIntensity1,rimIntensity2);
-
-   float isRamp = step(RAMP_VALUE,abs(depthDiffer1+depthDiffer2));
+   float rampValue = 0.0001;
+   if(LINEAR_DEPTH == ON)
+   {
+      rampValue = 0.001;
+   }
+   float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
 
    return min(rimIntensity,isRamp);
 }
@@ -268,24 +272,24 @@ float screenSpaceToViewSpace(float depth, mat4 projInv) {
 	return projInv[3].z / (projInv[2].w * depth + projInv[3].w);
 }
 
-float getDepthValue(float depth)
+float screenDepth2LinearDepth(float depth)
 {
-   if(DEPTH_OUTLINE == OFF)
+   if(LINEAR_DEPTH == OFF)
    {
-      return 1;
+      return depth;
    }
    float viewDepth = screenSpaceToViewSpace(depth, gbufferProjectionInverse);
-   float depthValue = max(-viewDepth, 0.0);
+   float linearDepth = max(-viewDepth, 0.0);
    const float actualMaxDistance = float(MAX_DISTANCE * 16.0);
    if(FALLOFF_CURVE != 0.0)
    {
-      depthValue = (exp(p * (depthValue / a)) - 1.0) / (exp(p) - 1.0);
+      linearDepth = (exp(p * (linearDepth / a)) - 1.0) / (exp(p) - 1.0);
    } else 
    {
-      depthValue /= actualMaxDistance;
+      linearDepth /= actualMaxDistance;
    }
-   depthValue = 1.0 - depthValue;
-   return depthValue;
+   linearDepth = 1.0 - linearDepth;
+   return linearDepth;
 }
 
 
@@ -293,12 +297,17 @@ void main()
 {
 	color = texture(colortex0, texcoord);
    float depth = texture(depthtex0, texcoord).r;
-   float depthValue = getDepthValue(depth);
+   depth = screenDepth2LinearDepth(depth);
 
-   float depthLeft = texture(depthtex0, vec2(texcoord.x + RIM_OFFECT / viewWidth * SCREEN_VALUE * depthValue ,texcoord.y)).r;
-   float depthRight = texture(depthtex0, vec2(texcoord.x - RIM_OFFECT / viewWidth * SCREEN_VALUE * depthValue ,texcoord.y )).r;
-   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + RIM_OFFECT / viewHeight * SCREEN_VALUE * depthValue)).r;
-   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - RIM_OFFECT / viewHeight * SCREEN_VALUE * depthValue)).r;
+   float depthLeft = texture(depthtex0, vec2(texcoord.x + (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y)).r;
+   float depthRight = texture(depthtex0, vec2(texcoord.x - (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y )).r;
+   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+
+   depthLeft = screenDepth2LinearDepth(depthLeft);
+   depthRight = screenDepth2LinearDepth(depthRight);
+   depthUp = screenDepth2LinearDepth(depthUp);
+   depthDown = screenDepth2LinearDepth(depthDown);
 
    float rimIntensityV = getRimIntensity(depthLeft,depthRight,depth);
 
@@ -316,7 +325,8 @@ void main()
 
    if(PAPER_WORLD == ON)
    {
-      color = vec4(depth,depth,depth,1);
+      //color = vec4(depth,depth,depth,1);
+      color = vec4(1,1,1,1);
       return;
    }
 

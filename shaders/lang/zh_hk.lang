@@ -12,3 +12,7 @@ option.INSIDE = 内凹
 option.INSIDE.commit = 内凹
 option.INSIDE = 外扩
 option.INSIDE.commit = 外扩
+option.LINEAR_DEPTH= 线性深度(测试)
+option.LINEAR_DEPTH.comment = 线性深度
+option.MAX_DISTANCE = 渲染距离（设置成和视频设置中的一样）
+option.MAX_DISTANCE.comment = 控制渲染距离
