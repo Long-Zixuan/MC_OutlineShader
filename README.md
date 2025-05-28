@@ -1,5 +1,5 @@
 <p align="center">
-    <img width src="https://gitee.com/zixuan_long/Img/raw/master/LS3_LOW_PIX.png">    
+    <img width src="https://gitee.com/zixuan_long/Img/raw/master/LS3.png">    
 </p>
 <center class="half">
   <img src="https://gitee.com/zixuan_long/Img/raw/master/support_iris4.png" width="33%">
@@ -11,6 +11,7 @@
 <p>It's a NPR shader,which based on the original style, which can add outline for game object and make the graphics more cartoonish  </p>
 <p>You can set outline width and outline color at shader pack settings page</p><p>if you turn on the "paper world" option,the world will only have outline</p>
   <br>
+  <p>For versions 1.21 and above, please use Iris to load this shader. For versions 1.21 and below, please use Optifine to load this shader</p>
 <br>
 <p>If you like this shader,please buy me a coffee,THANKS!</p>
 <a href="https://ko-fi.com/loongly">
@@ -38,6 +39,7 @@
 <p>您可以在光影包设置中，设置描边宽度和颜色</p>
  <p>如果开启“纸世界”选项，世界将会只有描边</p> 
   <br>
+  <p>1.21版本以上请使用iris加载本光影，1.21版本以下请使用optifine加载本光影</p>
 <br>
 <p>如果你喜欢这个光影的话，能不能请我喝杯咖啡？感激不尽！</p>
 <a href="https://ko-fi.com/loongly">
