@@ -206,6 +206,7 @@ void main()
 
     // SHADOW CALCULATION
 	vec3 sLight = vec3(1.0);
+#ifdef IS_IRIS 
 	#if ENABLE_SHADOWS == 1
 		if(length(world) < shadowDistance && id != 1.0){
 			if(length(world) < shadowDistance){
@@ -273,6 +274,7 @@ void main()
 			}
 		}
 	#endif
+#endif
 	// LIGHTING CALCULATION
 	float sBright = mix(SHADOW_BRIGHTNESS, 1.0, rainStrength);
 	float lVis = texture2D(lightmap, vec2(0.0, coord1.y)).r;
