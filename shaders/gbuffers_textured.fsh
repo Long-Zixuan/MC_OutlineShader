@@ -209,7 +209,7 @@ void main()
     #ifdef IS_IRIS
 
     #else
-    col.rgb *= vec3(1.3);
+    //col.rgb *= vec3(1.3);
     #endif
     
     // Apply gray bias BEFORE lighting calculations
