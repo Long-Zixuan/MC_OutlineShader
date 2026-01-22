@@ -30,6 +30,8 @@ const float shadowDistance = 256.0; //[64.0 96.0 128.0 160.0 192.0 224.0 256.0 2
 #define LAMBERT 1
 #define LAMBERT_MODE HALF_LAMBERT //[HALF_LAMBERT LAMBERT]
 
+#define CEL OFF //[OFF ON]
+
 vec3 distortShadow(vec3 pos) {
     #if SHADOW_DISTORTION == 1
         float factor = length(pos.xy) + SHADOW_DISTORT_REDUCTION;

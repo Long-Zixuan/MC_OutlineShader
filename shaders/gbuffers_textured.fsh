@@ -305,6 +305,27 @@ void main()
     #else
         shad = vec3(1) * lMap;
     #endif
+
+    #if CEL == 1
+        float x = (lambert > -0.1) ? 1 : 0.5;
+        if(lMap.r > 1)
+        {
+            lMap = vec3(1.2);
+        }
+        else if(lMap.r > 0.7)
+        {
+            lMap = vec3(0.8);
+        }
+        else if(lMap.r > 0.4)
+        {
+            lMap = vec3(0.6);
+        }
+        else
+        {
+            lMap = vec3(0.4);
+        }
+        shad = mix(skyColor,vec3(1),x) * lMap;
+    #endif
     
         
     col *= vec4(shad*(1.-blindness),1) + shine;
