@@ -26,6 +26,10 @@ const float shadowDistance = 256.0; //[64.0 96.0 128.0 160.0 192.0 224.0 256.0 2
 #define FAR_DISTANCE_BIAS_RANGE 48.0 // Range over which bias scales [32.0 48.0 64.0 80.0 96.0 112.0 128.0]
 #define FAR_DISTANCE_BIAS_MAX 4.0 // Maximum bias multiplier for far distances [2.0 3.0 4.0 5.0]
 
+#define HALF_LAMBERT 0
+#define LAMBERT 1
+#define LAMBERT_MODE HALF_LAMBERT //[HALF_LAMBERT LAMBERT]
+
 vec3 distortShadow(vec3 pos) {
     #if SHADOW_DISTORTION == 1
         float factor = length(pos.xy) + SHADOW_DISTORT_REDUCTION;
