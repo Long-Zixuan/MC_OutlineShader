@@ -7,7 +7,7 @@
 #define BLOCK_LIGHT_INTENSITY 0.8 // Controls brightness of block lights (torches, lanterns, etc) [0.0 0.25 0.5 0.75 0.8 0.85 1.0 1.25 1.5 2.0]
 
 //texture settings - Updated to use style system:
-#define Shininess 1.0 //Water shine intensity [0.0 0.25 0.5 0.75 1.0]
+#define Shininess 0.0 //Water shine intensity [0.0 0.25 0.5 0.75 1.0]
 #define ENABLE_DIRECTIONAL_LIGHTING 1 // Enable directional lighitng [OFF ON]
 #define ENABLE_VORONOI_DISTORTION 0 // Enable voronoi distortion [OFF ON]
 
