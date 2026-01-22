@@ -205,6 +205,12 @@ void main()
     
     // Apply vertex color (biome tinting)
     col.rgb *= color.rgb;
+
+    #ifdef IS_IRIS
+
+    #else
+    col.rgb *= vec3(1.3);
+    #endif
     
     // Apply gray bias BEFORE lighting calculations
 
