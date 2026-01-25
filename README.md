@@ -5,13 +5,14 @@
   <img src="https://gitee.com/zixuan_long/Img/raw/master/support_iris4.png" width="33%">
   <img src="https://gitee.com/zixuan_long/Img/raw/master/support_optifine3.png" width="42%">
 </center>
+
 <details>
   <summary>English</summary>
 <h1>Outline Shader</h1>
 <p>It's a NPR shader,which based on the original style, which can add outline for game object and make the graphics more cartoonish  </p>
 <p>You can set outline width and outline color at shader pack settings page</p><p>if you turn on the "paper world" option,the world will only have outline</p>
   <br>
-  <p>For versions 1.21 and below, please use Optifine to load this shader（(This shader can only be loaded with Iris on Minecraft versions 1.21 and above)）</p>
+
 <br>
 <p>If you like this shader,please buy me a coffee,THANKS!</p>
 <a href="https://ko-fi.com/loongly">
@@ -22,7 +23,10 @@
   <img  src="https://cdn.modrinth.com/data/cached_images/332a1805c84979815f5c0cf8849a520c0db7b3d0.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/b2db4bd89e53c43d7f1bf7c51bde9c08ca8abef2.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/a98d1808e357108145e653c7ab4b590006195f46.jpeg"> 
-  <img  src="https://cdn.modrinth.com/data/cached_images/82d94f5450c386b6dc9f98cdce95a615314c7532.jpeg"> 
+  <img  src="https://cdn.modrinth.com/data/cached_images/82d94f5450c386b6dc9f98cdce95a615314c7532.jpeg">
+  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/0619711d46ebc9c10687a8bdcdca151314204507.jpeg"> 
+  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/8923d760b347b693f5b95f96703aa99c8a2f8429.jpeg">
+  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/3e39960d2b98a624946f32395ddd35d23c235d94.png">
 </p>
   <h2>Paper world</h2>
   <p align="center">
@@ -39,7 +43,7 @@
 <p>您可以在光影包设置中，设置描边宽度和颜色</p>
  <p>如果开启“纸世界”选项，世界将会只有描边</p> 
   <br>
-  <p>1.21版本以下请使用optifine加载本光影(本光影只有在1.21版本以上的我的世界才可以用iris加载)</p>
+  
 <br>
 <p>如果你喜欢这个光影的话，能不能请我喝杯咖啡？感激不尽！</p>
 <a href="https://ko-fi.com/loongly">
@@ -51,6 +55,9 @@
   <img  src="https://cdn.modrinth.com/data/cached_images/b2db4bd89e53c43d7f1bf7c51bde9c08ca8abef2.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/a98d1808e357108145e653c7ab4b590006195f46.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/b85f18b22b636dc48458ff4063163480ad620ec2.jpeg"> 
+  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/0619711d46ebc9c10687a8bdcdca151314204507.jpeg"> 
+  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/8923d760b347b693f5b95f96703aa99c8a2f8429.jpeg">
+  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/3e39960d2b98a624946f32395ddd35d23c235d94.png">
 </p>
   <h2>纸世界</h2>
 <p align="center">
@@ -73,3 +80,6 @@
   <img  src="https://cdn.modrinth.com/data/cached_images/82d94f5450c386b6dc9f98cdce95a615314c7532.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/b85f18b22b636dc48458ff4063163480ad620ec2.jpeg"> 
 </p>-->
+<p align="center">
+    <img src="https://cdn.modrinth.com/data/fVElstMy/images/cd284616dc11c69bd70ee12fdfac3ca786e3f734.png">    
+</p>
