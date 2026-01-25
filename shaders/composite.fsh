@@ -208,7 +208,6 @@
 
 #version 330 compatibility
 
-#define MAX_DISTANCE 32 // [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 64]
 #define FALLOFF_CURVE 0.0 // [-10.0 -9.0 -8.0 -7.0 -6.0 -5.0 -4.0 -3.0 -2.0 -1.0 0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
 //#define x linearDepth
 #define a actualMaxDistance
@@ -280,7 +279,7 @@ float screenDepth2LinearDepth(float depth)
    }
    float viewDepth = screenSpaceToViewSpace(depth, gbufferProjectionInverse);
    float linearDepth = max(-viewDepth, 0.0);
-   const float actualMaxDistance = float(MAX_DISTANCE * 16.0);
+   float actualMaxDistance = far;
    if(FALLOFF_CURVE != 0.0)
    {
       linearDepth = (exp(p * (linearDepth / a)) - 1.0) / (exp(p) - 1.0);
