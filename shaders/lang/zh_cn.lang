@@ -22,3 +22,5 @@ option.Shininess = 光亮
 option.ENABLE_SHADOWS.comment = 开启后世界将出现阴影
 option.SOFT_SHADOWS.comment = 会使得阴影更加柔和，但是也会额外开销性能
 option.Shininess.comment = 阳光在水面等光滑表面反射的亮度
+option.LAMBERT_MODE = 光照模型
+option.LAMBERT_MODE.comment = LAMBERT更为真实，HALF_LAMBERT更为风格化。二者性能开销相似
