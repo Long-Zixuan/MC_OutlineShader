@@ -19,7 +19,6 @@ option.MAX_DISTANCE.comment = 控制渲染距离
 option.ENABLE_SHADOWS = 阴影
 option.SOFT_SHADOWS = 软阴影
 option.Shininess = 光亮
-
 option.ENABLE_SHADOWS.comment = 开启后世界将出现阴影
 option.SOFT_SHADOWS.comment = 会使得阴影更加柔和，但是也会额外开销性能
 option.Shininess.comment = 阳光在水面等光滑表面反射的亮度
