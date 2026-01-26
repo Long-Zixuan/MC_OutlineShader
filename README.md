@@ -24,9 +24,6 @@
   <img  src="https://cdn.modrinth.com/data/cached_images/b2db4bd89e53c43d7f1bf7c51bde9c08ca8abef2.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/a98d1808e357108145e653c7ab4b590006195f46.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/82d94f5450c386b6dc9f98cdce95a615314c7532.jpeg">
-  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/0619711d46ebc9c10687a8bdcdca151314204507.jpeg"> 
-  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/8923d760b347b693f5b95f96703aa99c8a2f8429.jpeg">
-  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/3e39960d2b98a624946f32395ddd35d23c235d94.png">
 </p>
   <h2>Paper world</h2>
   <p align="center">
@@ -55,9 +52,6 @@
   <img  src="https://cdn.modrinth.com/data/cached_images/b2db4bd89e53c43d7f1bf7c51bde9c08ca8abef2.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/a98d1808e357108145e653c7ab4b590006195f46.jpeg"> 
   <img  src="https://cdn.modrinth.com/data/cached_images/b85f18b22b636dc48458ff4063163480ad620ec2.jpeg"> 
-  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/0619711d46ebc9c10687a8bdcdca151314204507.jpeg"> 
-  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/8923d760b347b693f5b95f96703aa99c8a2f8429.jpeg">
-  <img  src="https://cdn.modrinth.com/data/fVElstMy/images/3e39960d2b98a624946f32395ddd35d23c235d94.png">
 </p>
   <h2>纸世界</h2>
 <p align="center">
