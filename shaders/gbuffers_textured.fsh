@@ -163,11 +163,21 @@ void main()
     vec3 dir = normalize((gbufferModelViewInverse * vec4(shadowLightPosition,0)).xyz);
     float flip = clamp(dir.y/.1,-1.,1.); dir *= flip;
     vec3 norm = normalize(cross(dFdx(world),dFdy(world)));
+#ifdef IS_IRIS
     #if LAMBERT_MODE == HALF_LAMBERT
     float lambert = (id>1.5)?dir.y*.5+.5:dot(norm,dir)*0.5+0.5;
-    #else
+    #endif
+    #if LAMBERT_MODE == LAMBERT
     float lambert = (id>1.5)?dir.y:dot(norm,dir);
     #endif
+#else
+    #if LAMBERT_MODE == HALF_LAMBERT
+    float lambert = dir.y*.5+.5;
+    #endif
+    #if LAMBERT_MODE == LAMBERT
+    float lambert = (id>1.5)?dir.y:dot(norm,dir);
+    #endif
+#endif
     float sun = exp((dot(reflect(normalize(world),norm),dir)-1.)*15.*(1.5-.5*flip));
     vec4 shine = vec4(vec3(sun)*flip*flip,0)*Shininess*step(.9,id)*step(id,1.1);
 
