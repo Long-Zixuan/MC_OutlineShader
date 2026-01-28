@@ -261,63 +261,9 @@ void main()
     vec4 col;
     
     // Declare voronoi variables once at the top level
-    #if VORONOI_DISTORTION == 1
-        vec2 cell = coord0*res;
-        vec2 floo = floor(cell);
-        vec2 mi = floor(floo/16.)*16.;
-        vec2 ma = mi+15.;
-        vec3 dif = floor(vert);
-        vec2 shift = off(cell,dif);
-        vec2 off1 = clamp(shift,mi,ma)/res;
-        vec2 gx = dFdx(coord0);
-        vec2 gy = dFdy(coord0);
-        
-        // Apply voronoi distortion
-        col = textureGrad(texture,off1,gx,gy);
-        if (id<1.5) col = mix(textureGrad(texture,coord0,gx,gy),col,col.a);
-    #else
-        // Standard texture sampling without distortion
+
+    // Standard texture sampling without distortion
         col = texture2D(texture, coord0);
-    #endif
-    
-    #ifdef TEXTURE_PAPER_STYLE
-    if (TEXTURE_PAPER_STYLE == 1) {
-        // Store original color for outline detection and grayscale mixing
-        vec4 originalCol = col;
-        
-        // Calculate texture brightness for paper processing
-        float brightness = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-        
-        // Create grayscale version
-        vec3 grayscaleTexture = vec3(brightness);
-        
-        // Mix between original texture color and grayscale based on TEXTURE_GRAYSCALE_STRENGTH
-        vec3 mixedTexture = mix(col.rgb, grayscaleTexture, TEXTURE_GRAYSCALE_STRENGTH);
-        
-        // Apply paper style with color preservation
-        vec3 paperBase = vec3(TEXTURE_PAPER_WHITENESS);
-        float mixedBrightness = dot(mixedTexture, vec3(0.299, 0.587, 0.114));
-        
-        // Create colored paper version (preserves hue) and grayscale paper version
-        vec3 coloredPaper = mixedTexture * paperBase * (0.6 + 0.4 * mixedBrightness);
-        vec3 grayscalePaper = paperBase * (0.6 + 0.4 * mixedBrightness);
-        
-        // Blend between colored and grayscale paper based on TEXTURE_GRAYSCALE_STRENGTH
-        vec3 paperColor = mix(coloredPaper, grayscalePaper, TEXTURE_GRAYSCALE_STRENGTH);
-        
-        // Apply outlines only if ENABLE_TEXTURE_OUTLINES is enabled
-        #if ENABLE_TEXTURE_OUTLINES == 1
-            // Get TEXTURE texture outlines only (no block edges)
-            float textureOutline = getTEXTURETextureOutline(coord0, originalCol);
-            
-            // Apply outline as much darker lines for dramatic effect
-            float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
-            paperColor = mix(paperColor, vec3(0.05, 0.05, 0.05), outline);
-        #endif
-        
-        col.rgb = paperColor;
-    }
-    #endif
 
     // Apply vertex color
     col.rgb *= color.rgb;
@@ -383,12 +329,6 @@ void main()
 	// Apply shadow-aware sun glare
     vec4 shine = vec4(vec3(sun)*flip*flip,0)*Shininess*step(.9,id)*step(id,1.1) * shadowFactor;
 	
-	#if TEXTURE_PAPER_STYLE == 1
-		// Boost shininess dramatically when paper effects are enabled
-		shine *= 3.0; // Increase this multiplier for  more dramatic shininess
-	#endif
-
-
 	// LIGHTING CALCULATION
 	float sBright = mix(SHADOW_BRIGHTNESS, 1.0, rainStrength);
 	float lVis = texture2D(lightmap, vec2(0.0, coord1.y)).r;
@@ -422,18 +362,7 @@ void main()
     
 	// Get the original texture color before biome tinting for better gray detection
 	vec4 originalTexture;
-    #if TEXTURE_PAPER_STYLE == 1
-        #if VORONOI_DISTORTION == 1
-            // Reuse the already calculated voronoi variables instead of redeclaring them
-            originalTexture = textureGrad(texture,off1,gx,gy);
-            if (id<1.5) originalTexture = mix(textureGrad(texture,coord0,gx,gy),originalTexture,originalTexture.a);
-        #else
-            originalTexture = texture2D(texture, coord0);
-        #endif
-        
-        col.rgb = applyGrayBias(col.rgb, originalTexture.rgb, color.rgb);
-    #endif
-    
+   
     // Store ORIGINAL texture color (before lighting) in colortex4
     vec4 originalTextureColor = originalTexture * vec4(color.rgb, 1.0);
     
