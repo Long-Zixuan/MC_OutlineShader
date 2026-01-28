@@ -30,6 +30,11 @@ const float shadowDistance = 256.0; //[64.0 96.0 128.0 160.0 192.0 224.0 256.0 2
 #define LAMBERT 1
 #define LAMBERT_MODE HALF_LAMBERT //[HALF_LAMBERT LAMBERT]
 
+#define GRAY_BIAS_STRENGTH 0.7 // How much to bias grays toward white [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+#define GRAY_BIAS_RANGE_MIN 0.15 // Lower bound for gray detection [0.1 0.125 0.15 0.175 0.2 0.225 0.25 0.275 0.3 0.325 0.35 0.375 0.4]
+#define GRAY_BIAS_RANGE_MAX 0.9 // Upper bound for gray detection [0.6 0.65 0.7 0.75 0.8 0.85 0.9]
+#define GRAY_BIAS_BRIGHTNESS_LIFT 0.6 // How much to brighten biased areas [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+
 #define CEL OFF //[OFF ON]
 
 vec3 distortShadow(vec3 pos) {
