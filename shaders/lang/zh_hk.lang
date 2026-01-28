@@ -1,7 +1,7 @@
 option.THRESHOLD = 深度差
 option.MAX_DISTANCE.comment = 控制深度差的阈值.
 option.RIM_OFFECT = 描边宽度
-option.FALLOFF_CURVE.comment = 控制像素的偏移量
+option.RIM_OFFECT.comment = 控制像素的偏移量
 option.OUTLINE_COL = 描边颜色
 option.OUTLINE_COL.commit = 调节描边颜色
 option.PAPER_WORLD = 纸世界
@@ -16,3 +16,10 @@ option.LINEAR_DEPTH= 线性深度(测试)
 option.LINEAR_DEPTH.comment = 线性深度
 option.MAX_DISTANCE = 渲染距离（设置成和视频设置中的一样）
 option.MAX_DISTANCE.comment = 控制渲染距离
+
+value.OUTLINE_MODE.INSIDE = 内凹
+value.OUTLINE_MODE.OUTSIDE = 外扩
+value.PAPER_WORLD.ON = §2开
+value.PAPER_WORLD.OFF = §4关
+value.LINEAR_DEPTH.ON = §2开
+value.LINEAR_DEPTH.OFF = §4关

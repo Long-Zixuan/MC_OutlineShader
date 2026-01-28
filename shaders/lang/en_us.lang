@@ -1,7 +1,7 @@
 option.THRESHOLD = Depth difference
 option.MAX_DISTANCE.comment = Control the threshold for depth difference
 option.RIM_OFFECT = Outline Width
-option.FALLOFF_CURVE.comment = Control the offset of pixels
+option.RIM_OFFECT.comment = Control the offset of pixels
 option.OUTLINE_COL = outline color
 option.OUTLINE_COL.commit = Control outline color
 option.PAPER_WORLD = Paper world
@@ -16,3 +16,10 @@ option.LINEAR_DEPTH= Linear depth(Beta)
 option.LINEAR_DEPTH.comment = linear depth
 option.MAX_DISTANCE = renderer distance
 option.MAX_DISTANCE.comment = Control the maximum distance of the renderer
+
+value.OUTLINE_MODE.INSIDE = Inside
+value.OUTLINE_MODE.OUTSIDE = Outside
+value.PAPER_WORLD.ON = §2On
+value.PAPER_WORLD.OFF = §4Off
+value.LINEAR_DEPTH.ON = §2On
+value.LINEAR_DEPTH.OFF = §4Off
