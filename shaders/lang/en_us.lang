@@ -1,7 +1,7 @@
 option.THRESHOLD = Depth difference
 option.MAX_DISTANCE.comment = Control the threshold for depth difference
 option.RIM_OFFECT = Outline Width
-option.FALLOFF_CURVE.comment = Control the offset of pixels
+option.RIM_OFFECT.comment = Control the offset of pixels
 option.OUTLINE_COL = outline color
 option.OUTLINE_COL.commit = Control outline color
 option.PAPER_WORLD = Paper world
