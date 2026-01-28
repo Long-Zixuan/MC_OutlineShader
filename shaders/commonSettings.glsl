@@ -16,12 +16,7 @@
 #define PCF_SAMPLE 16 //[8 16 32 64]
 #define PCF_BLUR_RADIUS 2.0 //[1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
 
-#define LOW 512
-#define MEDIUM 1024
-#define HIGH 2048
-#define VERT_HIGH 4096
-#define ULTRA 8192
-const int shadowMapResolution = 1024; //[LOW MEDIUM HIGH VERT_HIGH ULTRA]
+const int shadowMapResolution = 1024; //[512 1024 2048 4096 8192]
 const int noiseTextureResolution = 256;
 const float shadowDistance = 256.0; //[64.0 96.0 128.0 160.0 192.0 224.0 256.0 288.0 320.0 352.0 384.0 416.0 448.0 480.0 512.0]
 
