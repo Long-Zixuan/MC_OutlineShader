@@ -165,14 +165,14 @@ void main()
     vec3 norm = normalize(cross(dFdx(world),dFdy(world)));
 #ifdef IS_IRIS
     #if LAMBERT_MODE == HALF_LAMBERT
-    float lambert = (id>1.5)?dir.y*.5+.5:dot(norm,dir)*0.5+0.5;
+    float lambert = (id>1.5)?pow(dir.y*.5+.5,2):pow(dot(norm,dir)*0.5+0.5,2);
     #endif
     #if LAMBERT_MODE == LAMBERT
     float lambert = (id>1.5)?dir.y:dot(norm,dir);
     #endif
 #else
     #if LAMBERT_MODE == HALF_LAMBERT
-    float lambert = dir.y*.5+.5;
+    float lambert = pow(dir.y*.5+.5,2);
     #endif
     #if LAMBERT_MODE == LAMBERT
     float lambert = (id>1.5)?dir.y:dot(norm,dir);
