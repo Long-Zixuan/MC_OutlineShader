@@ -315,16 +315,9 @@ void main()
 	lMap += sLight * (1.0 - sBright);
 
     vec3 shad;
-    
-    // Non-emissive blocks: normal lighting
-    #if ENABLE_DIRECTIONAL_LIGHTING == 1
-        shad = mix(skyColor*.5+.2,vec3(1),lambert) * lMap;
-    #else
-        shad = vec3(1) * lMap;
-    #endif
 
     #if CEL == 1
-        float x = (lambert > -0.1) ? 1 : 0.5;
+        //float x = (lambert > -0.1) ? 1 : 0.5;
         float mr = min(0.9999,lMap.r);
         float m = texture2D(gaux4,vec2(mr, 0.5)).a;
         lMap = vec3(m);
@@ -344,9 +337,16 @@ void main()
         {
             lMap = vec3(0.4);
         }*/
-        shad = mix(skyColor,vec3(1),x) * lMap;
+        //shad = mix(skyColor,vec3(1),x) * lMap;
     #endif
-    
+
+     // Non-emissive blocks: normal lighting
+    #if ENABLE_DIRECTIONAL_LIGHTING == 1
+        vec3 lambertCol = texture2D(gaux4,vec2(lambert, 0.5)).rgb;
+        shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
+    #else
+        shad = vec3(1) * lMap;
+    #endif
         
     col *= vec4(shad*(1.-blindness),1) + shine;
 
