@@ -326,7 +326,7 @@ void main()
     #if CEL == 1
         float x = (lambert > -0.1) ? 1 : 0.5;
         float mr = min(0.9999,lMap.r);
-        float m = texture2D(gaux4,vec2(mr, 0.5)).r;
+        float m = texture2D(gaux4,vec2(mr, 0.5)).a;
         lMap = vec3(m);
         /*if(lMap.r > 1)
         {
