@@ -52,6 +52,7 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    {
       rampValue = 0.001;
    }
+   //rampValue = rampValue * (1 + depth * 1);
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
 
    return min(rimIntensity,isRamp);

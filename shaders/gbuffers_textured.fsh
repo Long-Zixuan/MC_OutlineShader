@@ -7,6 +7,7 @@ uniform sampler2D noisetex;
 uniform sampler2D texture;
 uniform sampler2D lightmap;
 uniform sampler2D depthtex0;
+uniform sampler2D gaux4;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelView;
@@ -324,7 +325,10 @@ void main()
 
     #if CEL == 1
         float x = (lambert > -0.1) ? 1 : 0.5;
-        if(lMap.r > 1)
+        float mr = min(0.9999,lMap.r);
+        float m = texture2D(gaux4,vec2(mr, 0.5)).r;
+        lMap = vec3(m);
+        /*if(lMap.r > 1)
         {
             lMap = vec3(1.2);
         }
@@ -339,7 +343,7 @@ void main()
         else
         {
             lMap = vec3(0.4);
-        }
+        }*/
         shad = mix(skyColor,vec3(1),x) * lMap;
     #endif
     
