@@ -7,6 +7,7 @@ uniform sampler2D noisetex;
 uniform sampler2D texture;
 uniform sampler2D lightmap;
 uniform sampler2D depthtex0;
+uniform sampler2D gaux3;
 uniform sampler2D gaux4;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 gbufferProjectionInverse;
@@ -319,7 +320,7 @@ void main()
     #if CEL == 1
         //float x = (lambert > -0.1) ? 1 : 0.5;
         float mr = min(0.9999,lMap.r);
-        float m = texture2D(gaux4,vec2(mr, 0.5)).a;
+        float m = texture2D(gaux3,vec2(mr, 0.5)).a * 1.2;
         lMap = vec3(m);
         /*if(lMap.r > 1)
         {
@@ -342,7 +343,11 @@ void main()
 
      // Non-emissive blocks: normal lighting
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
+        #if CEL == 1
+        vec3 lambertCol = texture2D(gaux3,vec2(lambert, 0.5)).rgb;
+        #else
         vec3 lambertCol = texture2D(gaux4,vec2(lambert, 0.5)).rgb;
+        #endif
         shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
     #else
         shad = vec3(1) * lMap;
