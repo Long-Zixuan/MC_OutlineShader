@@ -26,6 +26,8 @@ option.LAMBERT_MODE = Lighting Model
 option.LAMBERT_MODE.comment = "Lambert" is more authentic, "Half Lambert" is more stylized. The performance overhead of the two is similar
 option.shadowMapResolution = Shadow Quality
 option.shadowMapResolution.comment = The better the shadow quality, the higher the performance overhead. Generally, "Medium" is sufficient to provide excellent shadow effects
+option.CEL = Cel Shading
+
 
 value.OUTLINE_MODE.INSIDE = Inside
 value.OUTLINE_MODE.OUTSIDE = Outside
@@ -37,6 +39,8 @@ value.ENABLE_SHADOWS.ON = §2On
 value.ENABLE_SHADOWS.OFF = §4Off
 value.SOFT_SHADOWS.ON = §2On
 value.SOFT_SHADOWS.OFF = §4Off
+value.CEL.ON = §2On
+value.CEL.OFF = §4Off
 value.LAMBERT_MODE.LAMBERT = Lambert
 value.LAMBERT_MODE.HALF_LAMBERT = Half Lambert
 

@@ -22,6 +22,7 @@ option.LAMBERT_MODE = 光照模型
 option.LAMBERT_MODE.comment = “兰伯特”更为真实，“半兰伯特”更为风格化。二者性能开销相似
 option.shadowMapResolution = 阴影质量
 option.shadowMapResolution.comment = 阴影质量越高，性能开销越大。一般情况下“中”足以提供良好的阴影效果
+option.CEL = 卡通渲染
 
 value.OUTLINE_MODE.INSIDE = 内凹
 value.OUTLINE_MODE.OUTSIDE = 外扩
@@ -33,6 +34,8 @@ value.ENABLE_SHADOWS.ON = §2开
 value.ENABLE_SHADOWS.OFF = §4关
 value.SOFT_SHADOWS.ON = §2开
 value.SOFT_SHADOWS.OFF = §4关
+value.CEL.ON = §2开
+value.CEL.OFF = §4关
 value.LAMBERT_MODE.LAMBERT = 兰伯特
 value.LAMBERT_MODE.HALF_LAMBERT = 半兰伯特
 
