@@ -7,8 +7,8 @@ uniform sampler2D noisetex;
 uniform sampler2D texture;
 uniform sampler2D lightmap;
 uniform sampler2D depthtex0;
-uniform sampler2D gaux3;
-uniform sampler2D gaux4;
+uniform sampler2D gaux3; //Cel Ramp
+uniform sampler2D gaux4; //Toon Ramp
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelView;
@@ -45,6 +45,12 @@ varying float id;
 varying vec3 vPos;
 varying vec4 N;
 varying float emissiveFlag;
+
+#if CEL == ON
+#define ramptex gaux3
+#else
+#define ramptex gaux4
+#endif
 
 // Shadow sampling array https://github.com/jhk2/glsandbox/blob/master/kgl/samples/shadow/pcss.glsl
 const vec2 offsets[64] = vec2[64](
@@ -325,11 +331,7 @@ void main()
 
      // Non-emissive blocks: normal lighting
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
-        #if CEL == 1
-        vec3 lambertCol = texture2D(gaux3,vec2(lambert, 0.5)).rgb;
-        #else
-        vec3 lambertCol = texture2D(gaux4,vec2(lambert, 0.5)).rgb;
-        #endif
+        vec3 lambertCol = texture2D(ramptex,vec2(lambert, 0.5)).rgb;
         shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
     #else
         shad = vec3(1) * lMap;
