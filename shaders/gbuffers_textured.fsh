@@ -318,27 +318,9 @@ void main()
     vec3 shad;
 
     #if CEL == 1
-        //float x = (lambert > -0.1) ? 1 : 0.5;
         float mr = min(0.9999,lMap.r);
         float m = texture2D(gaux3,vec2(mr, 0.5)).a * 1.2;
         lMap = vec3(m);
-        /*if(lMap.r > 1)
-        {
-            lMap = vec3(1.2);
-        }
-        else if(lMap.r > 0.7)
-        {
-            lMap = vec3(0.8);
-        }
-        else if(lMap.r > 0.4)
-        {
-            lMap = vec3(0.6);
-        }
-        else
-        {
-            lMap = vec3(0.4);
-        }*/
-        //shad = mix(skyColor,vec3(1),x) * lMap;
     #endif
 
      // Non-emissive blocks: normal lighting
