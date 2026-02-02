@@ -242,7 +242,7 @@ void main()
     // Apply lighting, biome colors, and other effects
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
         vec3 lambertCol = texture2D(ramptex,vec2(lambert, 0.5)).rgb;
-        shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
+        vec3 shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
     #else
         vec3 shad = vec3(1) * lMap;
     #endif
