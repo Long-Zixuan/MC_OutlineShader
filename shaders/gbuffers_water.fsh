@@ -46,6 +46,15 @@ varying float id;
 varying vec3 vPos;
 varying vec4 N;
 
+uniform sampler2D gaux3; //Cel Ramp
+uniform sampler2D gaux4; //Toon Ramp
+
+#if CEL == ON
+#define ramptex gaux3
+#else
+#define ramptex gaux4
+#endif
+
 // Shadow sampling arrays - using reduced set for water
 const vec2 offsets[32] = vec2[32](
     vec2(-0.04117257, -0.1597612),
@@ -222,6 +231,12 @@ void main()
 	lMap *= color.a;
 	sBright += (1.0 - lVis) * (1.0 - sBright);
 	lMap += sLight * (1.0 - sBright);
+
+    #if CEL == 1
+        float mr = min(0.9999,lMap.r);
+        float m = texture2D(ramptex,vec2(mr, 0.5)).a * 1.2;
+        lMap = vec3(m);
+    #endif
     
     // Apply lighting, biome colors, and other effects
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
