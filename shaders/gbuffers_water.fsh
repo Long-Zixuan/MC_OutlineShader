@@ -95,6 +95,32 @@ float sWaterPCF(sampler2D sTex, vec3 sSPos, float bRad){
     return sMap / float(samples);
 }
 
+// Simple texture outline detection with very small sampling to (attempt to) avoid block edges LEGACY FUNCTION
+float getTEXTURETextureOutline(vec2 texCoord, vec4 originalColor) {
+    vec2 res = vec2(textureSize(texture,0));
+    vec2 texelSize = (1.0 / res) * OUTLINE_THICKNESS;
+    
+    // Use much smaller sampling - only 1-2 pixels to stay within texture boundaries
+    texelSize *= 0.3;
+    
+    // Sample surrounding pixels
+    vec4 colorRight = texture2D(texture, texCoord + vec2(texelSize.x, 0.0));
+    vec4 colorDown = texture2D(texture, texCoord + vec2(0.0, texelSize.y));
+    vec4 colorLeft = texture2D(texture, texCoord - vec2(texelSize.x, 0.0));
+    vec4 colorUp = texture2D(texture, texCoord - vec2(0.0, texelSize.y));
+    
+    // Calculate color differences
+    float diffRight = length(originalColor.rgb - colorRight.rgb);
+    float diffDown = length(originalColor.rgb - colorDown.rgb);
+    float diffLeft = length(originalColor.rgb - colorLeft.rgb);
+    float diffUp = length(originalColor.rgb - colorUp.rgb);
+    
+    float maxDiff = max(max(diffRight, diffDown), max(diffLeft, diffUp));
+    
+    // Make it dramatic but keep the smooth gradations
+    return clamp(maxDiff * 4.0, 0.0, 1.0);
+}
+
 /* RENDERTARGETS:0,4 */
 void main()
 {
@@ -223,12 +249,21 @@ void main()
     
     // Apply lighting to get final shadowed color
     vec3 finalColor = col.rgb; // This already has shadows applied
+    if(PAPER_WORLD == ON)
+    {
+        finalColor = vec3(1,1,1);
+    }
+
+    #if ENABLE_TEXTURE_OUTLINES == 1
+        // Get TEXTURE texture outlines only (no block edges)
+        float textureOutline = getTEXTURETextureOutline(coord0, originalTextureColor);
+        
+        // Apply outline as much darker lines for dramatic effect
+        float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
+        finalColor = mix(finalColor, vec3(0.05, 0.05, 0.05), outline);
+    #endif
     
     // Output final lit color to colortex0, original color to colortex4
     gl_FragData[0] = vec4(finalColor, col.a);
 	gl_FragData[1] = vec4(originalTextureColor.rgb, 1.0);
-    if(PAPER_WORLD == ON)
-    {
-        gl_FragData[0] = vec4(1,1,1,1);
-    }
 }
