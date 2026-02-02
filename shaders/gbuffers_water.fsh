@@ -136,7 +136,7 @@ void main()
     vec3 dir = normalize((gbufferModelViewInverse * vec4(shadowLightPosition,0)).xyz);
     float flip = clamp(dir.y/.1,-1.,1.); dir *= flip;
     vec3 norm = normalize(cross(dFdx(world),dFdy(world)));
-    float lambert = (id>1.5)?dir.y*.5+.5:dot(norm,dir)*.5+.5;
+    float lambert = (id>1.5)?pow(dir.y*.5+.5,2):pow(dot(norm,dir)*0.5+0.5,2);
     
     // Calculate basic sun reflection first
     float sun = exp((dot(reflect(normalize(world),norm),dir)-1.)*15.*(1.5-.5*flip));
@@ -241,7 +241,8 @@ void main()
     
     // Apply lighting, biome colors, and other effects
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
-        vec3 shad = mix(skyColor*.5+.2,vec3(1),lambert) * lMap;
+        vec3 lambertCol = texture2D(ramptex,vec2(lambert, 0.5)).rgb;
+        shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
     #else
         vec3 shad = vec3(1) * lMap;
     #endif
