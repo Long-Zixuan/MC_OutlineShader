@@ -227,4 +227,8 @@ void main()
     // Output final lit color to colortex0, original color to colortex4
     gl_FragData[0] = vec4(finalColor, col.a);
 	gl_FragData[1] = vec4(originalTextureColor.rgb, 1.0);
+    if(PAPER_WORLD == ON)
+    {
+        gl_FragData[0] = vec4(1,1,1,1);
+    }
 }

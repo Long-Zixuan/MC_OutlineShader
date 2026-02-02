@@ -379,6 +379,10 @@ void main()
     
     // Apply lighting to get final shadowed color
     vec3 finalColor = col.rgb; // This already has shadows applied
+    if(PAPER_WORLD == ON)
+    {
+        finalColor = vec3(1,1,1);
+    }
 
     #if ENABLE_TEXTURE_OUTLINES == 1
         // Get TEXTURE texture outlines only (no block edges)

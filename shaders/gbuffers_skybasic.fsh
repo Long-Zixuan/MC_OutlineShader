@@ -1,5 +1,5 @@
 #version 120
-
+#include "commonSettings.glsl"
 uniform float viewHeight;
 uniform float viewWidth;
 uniform mat4 gbufferModelView;
@@ -33,4 +33,8 @@ void main() {
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0); //gcolor
+	if(PAPER_WORLD == ON)
+    {
+        gl_FragData[0] = vec4(1,1,1,1);
+    }
 }

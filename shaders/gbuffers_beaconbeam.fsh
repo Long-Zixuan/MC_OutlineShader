@@ -1,5 +1,5 @@
 #version 120
-
+#include "commonSettings.glsl"
 uniform sampler2D texture;
 
 varying vec2 texcoord;
@@ -10,4 +10,8 @@ void main() {
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color; //gcolor
+	if(PAPER_WORLD == ON)
+    {
+        gl_FragData[0] = vec4(1,1,1,1);
+    }
 }

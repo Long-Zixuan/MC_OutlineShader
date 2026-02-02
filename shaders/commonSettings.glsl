@@ -40,6 +40,7 @@ const float shadowDistance = 256.0; //[64.0 96.0 128.0 160.0 192.0 224.0 256.0 2
 #define ENABLE_TEXTURE_OUTLINES ON //[OFF ON]
 #define TEXTURE_OUTLINE_STRENGTH 0.8 // Outline intensity [0.0 0.5 0.8 1.0 1.5]
 #define OUTLINE_THICKNESS 0.5 // Edge thickness [0.5 1.0 1.5 2.0 3.0]
+#define PAPER_WORLD OFF // [OFF ON]
 
 vec3 distortShadow(vec3 pos) {
     #if SHADOW_DISTORTION == 1

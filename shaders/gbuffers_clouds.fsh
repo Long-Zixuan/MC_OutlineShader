@@ -1,5 +1,5 @@
 #version 120
-
+#include "commonSettings.glsl"
 uniform sampler2D texture;
 
 uniform float blindness;
@@ -19,4 +19,8 @@ void main()
     col.rgb = mix(col.rgb, gl_Fog.color.rgb, fog);
 
     gl_FragData[0] = col;
+    if(PAPER_WORLD == ON)
+    {
+        gl_FragData[0] = vec4(1,1,1,1);
+    }
 }

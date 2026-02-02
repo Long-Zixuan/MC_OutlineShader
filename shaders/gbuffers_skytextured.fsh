@@ -1,5 +1,5 @@
 #version 120
-
+#include "commonSettings.glsl"
 uniform sampler2D texture;
 uniform float blindness;
 uniform int isEyeInWater;
@@ -26,4 +26,8 @@ void main()
     // Write to colortex4 (original texture color with shadow info)
     // Sky elements are never shadowed, so shadow strength = 1.0
     gl_FragData[1] = vec4(originalTextureColor.rgb * glcolor.rgb, 1.0);
+    if(PAPER_WORLD == ON)
+    {
+        gl_FragData[0] = vec4(1,1,1,1);
+    }
 }
