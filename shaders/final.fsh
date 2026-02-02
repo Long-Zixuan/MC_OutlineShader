@@ -8,7 +8,6 @@
 #define OFF 0
 #define ON 1
 #define LINEAR_DEPTH OFF // [OFF ON]
-//#define PAPER_WORLD OFF // [OFF ON]
 /////
 
 #define THRESHOLD 0.0001 // [0.00001 0.0001 0.0002 0.001 0.002 0.01]
@@ -114,12 +113,6 @@ void main()
       return;
    }
 
-   /*if(PAPER_WORLD == ON)
-   {
-      //gl_FragData[0] = vec4(depth,depth,depth,1);
-      gl_FragData[0] = vec4(1,1,1,1);
-      return;
-   }*/
 }
 
 //LZX vscode 2025/03/24
