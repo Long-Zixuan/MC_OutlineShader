@@ -27,7 +27,10 @@ option.LAMBERT_MODE.comment = "Lambert" is more authentic, "Half Lambert" is mor
 option.shadowMapResolution = Shadow Quality
 option.shadowMapResolution.comment = The better the shadow quality, the higher the performance overhead. Generally, "Medium" is sufficient to provide excellent shadow effects
 option.CEL = Cel Shading
-
+option.ENABLE_TEXTURE_OUTLINES = Texture Outline
+option.TEXTURE_OUTLINE_STRENGTH = Texture Outline Color
+option.TEXTURE_OUTLINE_STRENGTH.comment = The higher the value, the darker the color. Conversely, the lower the value, the lighter the color
+option.OUTLINE_THICKNESS = Texture Outline Width
 
 value.OUTLINE_MODE.INSIDE = Inside
 value.OUTLINE_MODE.OUTSIDE = Outside
@@ -41,6 +44,8 @@ value.SOFT_SHADOWS.ON = §2On
 value.SOFT_SHADOWS.OFF = §4Off
 value.CEL.ON = §2On
 value.CEL.OFF = §4Off
+value.ENABLE_TEXTURE_OUTLINES.ON = §2On
+value.ENABLE_TEXTURE_OUTLINES.OFF = §4Off
 value.LAMBERT_MODE.LAMBERT = Lambert
 value.LAMBERT_MODE.HALF_LAMBERT = Half Lambert
 
