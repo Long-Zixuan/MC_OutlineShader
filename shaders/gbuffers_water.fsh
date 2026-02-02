@@ -154,6 +154,7 @@ void main()
 
     // Standard texture sampling without distortion
     col = texture2D(texture, coord0);
+    vec4 originCol = col;
 
     // Apply vertex color
     col.rgb *= color.rgb;
@@ -271,7 +272,7 @@ void main()
 
     #if ENABLE_TEXTURE_OUTLINES == 1
         // Get TEXTURE texture outlines only (no block edges)
-        float textureOutline = getTEXTURETextureOutline(coord0, originalTextureColor);
+        float textureOutline = getTEXTURETextureOutline(coord0, originCol);
         
         // Apply outline as much darker lines for dramatic effect
         float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
