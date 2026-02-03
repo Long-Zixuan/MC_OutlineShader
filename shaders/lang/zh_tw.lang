@@ -28,6 +28,10 @@ option.TEXTURE_OUTLINE_STRENGTH = 纹理描边颜色
 option.TEXTURE_OUTLINE_STRENGTH.comment = 该值越大，颜色越深。反之越浅
 option.OUTLINE_THICKNESS = 纹理描边宽度
 
+screen.Shadow = 阴影设置
+screen.Outline = 描边设置
+screen.TextureOutline = 纹理描边设置
+
 value.OUTLINE_MODE.INSIDE = 内凹
 value.OUTLINE_MODE.OUTSIDE = 外扩
 value.PAPER_WORLD.ON = §2开

@@ -32,6 +32,10 @@ option.TEXTURE_OUTLINE_STRENGTH = Texture Outline Color
 option.TEXTURE_OUTLINE_STRENGTH.comment = The higher the value, the darker the color. Conversely, the lower the value, the lighter the color
 option.OUTLINE_THICKNESS = Texture Outline Width
 
+screen.Shadow = Shadow Settings
+screen.Outline = Outline Settings
+screen.TextureOutline = Texture Outline Settings
+
 value.OUTLINE_MODE.INSIDE = Inside
 value.OUTLINE_MODE.OUTSIDE = Outside
 value.PAPER_WORLD.ON = §2On
