@@ -27,6 +27,9 @@ option.ENABLE_TEXTURE_OUTLINES = 纹理描边
 option.TEXTURE_OUTLINE_STRENGTH = 纹理描边颜色
 option.TEXTURE_OUTLINE_STRENGTH.comment = 该值越大，颜色越深。反之越浅
 option.OUTLINE_THICKNESS = 纹理描边宽度
+option.SHADOW_DISTANCE = 阴影距离
+option.SHADOW_DISTANCE.comment = 实时阴影渲染的最大距离。  §c[-] 该选项对性能影响较大，如果感觉卡顿，可尝试将此值改小。“自动”将会使用游戏视频设置中的渲染距离作为阴影距离
+
 
 screen.Shadow = 阴影设置
 screen.Outline = 描边设置
@@ -56,3 +59,5 @@ value.shadowMapResolution.1024 = 中
 value.shadowMapResolution.2048 = 高
 value.shadowMapResolution.4096 = 很高
 value.shadowMapResolution.8192 = 极致
+
+value.SHADOW_DISTANCE.-1 = 自动

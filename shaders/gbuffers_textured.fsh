@@ -260,10 +260,16 @@ void main()
 
     // SHADOW CALCULATION
 	vec3 sLight = vec3(1.0);
+    
+    #if SHADOW_DISTANCE == -1  //-1 mean auto
+    float shadowDist = far;
+    #else
+    float shadowDist = SHADOW_DISTANCE;
+    #endif
 
 	#if ENABLE_SHADOWS == 1
-		if(length(world) < shadowDistance && id != 1.0){
-			if(length(world) < shadowDistance){
+		if(length(world) < shadowDist && id != 1.0){
+			if(length(world) < shadowDist){
 				vec3 sWorld = vec3(shadowModelView * vec4(world, 1.0));
 				vec3 sClip = vec3(shadowProjection * vec4(sWorld, 1.0));
 

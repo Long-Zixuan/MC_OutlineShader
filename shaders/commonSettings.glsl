@@ -18,7 +18,7 @@
 
 const int shadowMapResolution = 1024; //[512 1024 2048 4096 8192]
 const int noiseTextureResolution = 256;
-const float shadowDistance = 256.0; //[64.0 96.0 128.0 160.0 192.0 224.0 256.0 288.0 320.0 352.0 384.0 416.0 448.0 480.0 512.0]
+#define SHADOW_DISTANCE -1 //[-1 64.0 96.0 128.0 160.0 192.0 224.0 256.0 288.0 320.0 352.0 384.0 416.0 448.0 480.0 512.0]
 
 #define SHADOW_DISTORTION ON // Enable shadow map distortion [0 1]
 #define SHADOW_DISTORT_REDUCTION 0.15 // Distortion Reduction [0.05 0.10 0.15 0.20 0.25 0.30]

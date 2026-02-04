@@ -163,7 +163,12 @@ void main()
     vec3 sLight = vec3(1.0);
 	float shadowFactor = 1.0; // Add this to track shadow strength
 	#if ENABLE_SHADOWS == 1
-		if(length(world) < shadowDistance){
+        #if SHADOW_DISTANCE == -1 //-1 mean auto
+        float shadowDist = far;
+        #else
+        float shadowDist = SHADOW_DISTANCE;
+        #endif
+		if(length(world) < shadowDist){
 			vec3 sWorld = vec3(shadowModelView * vec4(world, 1.0));
 			vec3 sClip = vec3(shadowProjection * vec4(sWorld, 1.0));
 

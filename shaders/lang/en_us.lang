@@ -31,6 +31,8 @@ option.ENABLE_TEXTURE_OUTLINES = Texture Outline
 option.TEXTURE_OUTLINE_STRENGTH = Texture Outline Color
 option.TEXTURE_OUTLINE_STRENGTH.comment = The higher the value, the darker the color. Conversely, the lower the value, the lighter the color
 option.OUTLINE_THICKNESS = Texture Outline Width
+option.SHADOW_DISTANCE=Shadow Distance
+option.SHADOW_DISTANCE.comment=Maximum distance from the player where real-time shadows are rendered. Balance between shadow coverage and performance.\n\n§c[-] High values may impact performance."Auto" will use Render Distance in video settings as Shadow Distance
 
 screen.Shadow = Shadow Settings
 screen.Outline = Outline Settings
@@ -58,3 +60,5 @@ value.shadowMapResolution.1024 = Medium
 value.shadowMapResolution.2048 = High
 value.shadowMapResolution.4096 = Very High
 value.shadowMapResolution.8192 = Ultra
+
+value.SHADOW_DISTANCE.-1 = Auto
