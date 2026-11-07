@@ -11,7 +11,7 @@
 
 #define THRESHOLD 0.0001 // [0.005 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1]
 #define RIM_OFFECT 0.001 // [0.0003 0.0004 0.0005 0.001 0.002 0.003 0.004 0.005 0.01]
-#define OUTLINE_COL 0.3 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9]
+#define OUTLINE_COL 0.3 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9]
 //#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 
@@ -78,20 +78,18 @@ float SobelSampleDepth(vec2 uv, vec3 offset)
 
 void main() 
 {
-	gl_FragData[0] = texture(colortex0, texcoord);
+	vec4 sceneColor = texture(colortex0, texcoord);
 
    vec3 offset = vec3((1.0 / viewWidth), (1.0 / viewHeight), 0.0) * RIM_OFFECT * SCREEN_VALUE;
 
    float sobelDepth = SobelSampleDepth(texcoord, offset);
 
+   //sobelDepth = pow(saturate(sobelDepth) * _OutlineDepthMultiplier, _OutlineDepthBias);
+
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
 
-   if(sobelDepth >= THRESHOLD)
-   {
-      gl_FragData[0] = texture(colortex0, texcoord) * outlineCol;
-      return;
-   }
-
+   vec4 color = mix(sceneColor, outlineCol, sobelDepth);
+   gl_FragData[0] = color;
 }
 
 //LZX vscode 2025/03/24
