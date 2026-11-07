@@ -7,15 +7,11 @@
 
 #define OFF 0
 #define ON 1
-#define LINEAR_DEPTH OFF // [OFF ON]
 /////
 
-#define THRESHOLD 0.0001 // [0.00001 0.0001 0.0002 0.001 0.002 0.01]
-#define RIM_OFFECT 0.001 // [0.0001 0.0002 0.0005 0.001 0.002 0.003 0.004 0.005 0.01]
+#define THRESHOLD 0.0001 // [0.005 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1]
+#define RIM_OFFECT 0.001 // [0.0003 0.0004 0.0005 0.001 0.002 0.003 0.004 0.005 0.01]
 #define OUTLINE_COL 0.3 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9]
-#define OUTSIDE  -1
-#define INSIDE 1
-#define OUTLINE_MODE INSIDE // [INSIDE OUTSIDE]
 //#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 
@@ -38,25 +34,6 @@ varying vec2 texcoord;
 
 /* DRAWBUFFERS:0 */
 
-float getRimIntensity(float depthOft1,float depthOft2,float depth)
-{
-   float depthDiffer1 = (depthOft1 - depth) * OUTLINE_MODE;
-   float depthDiffer2 = (depthOft2 - depth) * OUTLINE_MODE;
-
-   float rimIntensity1 = step(THRESHOLD,depthDiffer1);
-   float rimIntensity2 = step(THRESHOLD,depthDiffer2);
-   float rimIntensity = max(rimIntensity1,rimIntensity2);
-   float rampValue = 0.0001;
-   if(LINEAR_DEPTH == ON)
-   {
-      rampValue = 0.001;
-   }
-   //rampValue = rampValue * (1 + depth * 1);
-   float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
-
-   return min(rimIntensity,isRamp);
-}
-
 float screenSpaceToViewSpace(float depth, mat4 projInv) {
 	depth = depth * 2.0 - 1.0;
 	return projInv[3].z / (projInv[2].w * depth + projInv[3].w);
@@ -64,17 +41,14 @@ float screenSpaceToViewSpace(float depth, mat4 projInv) {
 
 float screenDepth2LinearDepth(float depth)
 {
-   if(LINEAR_DEPTH == OFF)
-   {
-      return depth;
-   }
    float viewDepth = screenSpaceToViewSpace(depth, gbufferProjectionInverse);
    float linearDepth = max(-viewDepth, 0.0);
    float actualMaxDistance = float(far);
    if(FALLOFF_CURVE != 0.0)
    {
       linearDepth = (exp(p * (linearDepth / a)) - 1.0) / (exp(p) - 1.0);
-   } else 
+   } 
+   else 
    {
       linearDepth /= actualMaxDistance;
    }
@@ -82,32 +56,37 @@ float screenDepth2LinearDepth(float depth)
    return linearDepth;
 }
 
+float SobelDepth(float ldc, float ldl, float ldr, float ldu, float ldd)
+{
+   return abs(ldl - ldc) +
+      abs(ldr - ldc) +
+      abs(ldu - ldc) +
+      abs(ldd - ldc);
+}
+
+float SobelSampleDepth(vec2 uv, vec3 offset)
+{
+   float pixelCenter = screenDepth2LinearDepth(texture(depthtex0, uv).r);
+   float pixelLeft = screenDepth2LinearDepth(texture(depthtex0, uv - offset.xz).r);
+   float pixelRight = screenDepth2LinearDepth(texture(depthtex0, uv + offset.xz).r);
+   float pixelUp = screenDepth2LinearDepth(texture(depthtex0, uv + offset.zy).r);
+   float pixelDown = screenDepth2LinearDepth(texture(depthtex0, uv - offset.zy).r);
+
+   return SobelDepth(pixelCenter, pixelLeft, pixelRight, pixelUp, pixelDown);
+}
+
 
 void main() 
 {
 	gl_FragData[0] = texture(colortex0, texcoord);
-   float depth = texture(depthtex0, texcoord).r;
-   depth = screenDepth2LinearDepth(depth);
 
-   float depthLeft = texture(depthtex0, vec2(texcoord.x + (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y)).r;
-   float depthRight = texture(depthtex0, vec2(texcoord.x - (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y )).r;
-   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
-   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+   vec3 offset = vec3((1.0 / viewWidth), (1.0 / viewHeight), 0.0) * RIM_OFFECT * SCREEN_VALUE;
 
-   depthLeft = screenDepth2LinearDepth(depthLeft);
-   depthRight = screenDepth2LinearDepth(depthRight);
-   depthUp = screenDepth2LinearDepth(depthUp);
-   depthDown = screenDepth2LinearDepth(depthDown);
-
-   float rimIntensityV = getRimIntensity(depthLeft,depthRight,depth);
-
-   float rimIntensityH = getRimIntensity(depthUp,depthDown,depth);
-
-   float rimIntensity = max(rimIntensityV,rimIntensityH);
+   float sobelDepth = SobelSampleDepth(texcoord, offset);
 
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
 
-   if(rimIntensity == 1)
+   if(sobelDepth >= THRESHOLD)
    {
       gl_FragData[0] = texture(colortex0, texcoord) * outlineCol;
       return;
