@@ -15,6 +15,10 @@
 //#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 
+#define OutlineDepthMultiplier 1.0 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
+#define OutlineDepthBias 1.0 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
+
+
 uniform float far;
 uniform sampler2D depthtex0;
 
@@ -84,7 +88,7 @@ void main()
 
    float sobelDepth = SobelSampleDepth(texcoord, offset);
 
-   //sobelDepth = pow(saturate(sobelDepth) * _OutlineDepthMultiplier, _OutlineDepthBias);
+   sobelDepth = pow(clamp(sobelDepth, 0.0, 1.0) * OutlineDepthMultiplier, OutlineDepthBias);
 
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
 
