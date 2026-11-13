@@ -93,6 +93,12 @@ void main()
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
 
    vec4 color = mix(sceneColor, outlineCol, sobelDepth);
+   if(texcoord.x > 0.5)
+   {
+      color.x = 1 - color.x;
+      color.y = 1 - color.y;
+      color.z = 1 - color.z;
+   }
    gl_FragData[0] = color;
 }
 
