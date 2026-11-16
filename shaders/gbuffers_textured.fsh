@@ -194,9 +194,9 @@ float getTEXTURETextureOutline(vec2 texCoord, vec4 originalColor) {
 /* RENDERTARGETS:0,4 */
 void main()
 {
-    vec3 dir = normalize((gbufferModelViewInverse * vec4(shadowLightPosition,0)).xyz);
-    float flip = clamp(dir.y/.1,-1.,1.); dir *= flip;
-    vec3 norm = normalize(cross(dFdx(world),dFdy(world)));
+    vec3 dir = normalize((gbufferModelViewInverse * vec4(shadowLightPosition,0)).xyz);//将摄像机坐标系下光源向量从摄像机坐标转为世界坐标
+    float flip = clamp(dir.y/.1,-1.,1.); dir *= flip;//避免晚上出现反着打光
+    vec3 norm = normalize(cross(dFdx(world),dFdy(world)));//对坐标求导 叉乘求法线
 #ifdef IS_IRIS
     #if LAMBERT_MODE == HALF_LAMBERT
     float lambert = (id>1.5)?pow(dir.y*.5+.5,2):pow(dot(norm,dir)*0.5+0.5,2);
