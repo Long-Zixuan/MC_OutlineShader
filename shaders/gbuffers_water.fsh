@@ -229,27 +229,40 @@ void main()
 	float sBright = mix(SHADOW_BRIGHTNESS, 1.0, rainStrength);
 	float lVis = texture2D(lightmap, vec2(0.0, coord1.y)).r;
 
-	float blockLightCoord = coord1.x * BLOCK_LIGHT_INTENSITY;
-	blockLightCoord = clamp(blockLightCoord, 0.0, 1.0); // Keep within valid range
+	// Sample the light map at the FULL block light coordinate and at zero block
+	// light; the difference is the block light (torch, lantern, ...) contribution.
+	vec3 lMapFull = texture2D(lightmap, vec2(coord1.x, coord1.y * sBright)).rgb;
+	vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y * sBright)).rgb;
+	vec3 blockLightContribution = max(vec3(0.0), lMapFull - lMapAmbient);
 
-	vec3 lMap = texture2D(lightmap, vec2(blockLightCoord, coord1.y * sBright)).rgb;
+	// How much of the sun reaches this face: 0 = sunlit, 1 = in shadow / facing away.
+	float shadowAmount = clamp(1.0 - dot(sLight, vec3(1.0 / 3.0)), 0.0, 1.0);
 
-	lMap *= color.a;
+	// Sky light and block light are kept apart, exactly like in gbuffers_textured.fsh:
+	// the sun terms below must not dim torches on faces the sun does not reach.
+	vec3 skyLight = lMapAmbient * color.a;
+	vec3 blockLight = blockLightContribution * color.a
+		* (BLOCK_LIGHT_INTENSITY * mix(1.0, BLOCK_LIGHT_SHADOW_BOOST, shadowAmount));
+
 	sBright += (1.0 - lVis) * (1.0 - sBright);
-	lMap += sLight * (1.0 - sBright);
+	skyLight += sLight * (1.0 - sBright);
 
     #if CEL == 1
-        float mr = min(0.9999,lMap.r);
-        float m = texture2D(ramptex,vec2(mr, 0.5)).a * 1.2;
-        lMap = vec3(m);
+        // Cel shading ramps the light into flat bands; the block light share is split
+        // back out so the sun terms below cannot dim torches (see gbuffers_textured.fsh).
+        vec3 totalLight = skyLight + blockLight;
+        vec3 ramped = vec3(texture2D(ramptex, vec2(min(0.9999, totalLight.r), 0.5)).a * 1.2);
+        float blockShare = clamp(blockLight.r / max(totalLight.r, 1e-4), 0.0, 1.0);
+        blockLight = ramped * blockShare;
+        skyLight = ramped - blockLight;
     #endif
     
     // Apply lighting, biome colors, and other effects
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
         vec3 lambertCol = texture2D(ramptex,vec2(lambert, 0.5)).rgb;
-        vec3 shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
+        vec3 shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * skyLight + blockLight;
     #else
-        vec3 shad = vec3(1) * lMap;
+        vec3 shad = vec3(1) * skyLight + blockLight;
     #endif
     
     col *= vec4(shad*(1.-blindness),1) + shine;

@@ -62,3 +62,10 @@ value.shadowMapResolution.4096 = Very High
 value.shadowMapResolution.8192 = Ultra
 
 value.SHADOW_DISTANCE.-1 = Auto
+
+option.SHADOW_BRIGHTNESS = Shadow Brightness
+option.SHADOW_BRIGHTNESS.comment = How much sky light a surface keeps when it is in shadow
+option.BLOCK_LIGHT_INTENSITY = Block Light Brightness
+option.BLOCK_LIGHT_INTENSITY.comment = Brightness of block lights such as torches and lanterns
+option.BLOCK_LIGHT_SHADOW_BOOST = Torch Light in Shadow
+option.BLOCK_LIGHT_SHADOW_BOOST.comment = Extra block light brightness on faces the sun does not reach (in shadow or facing away). Raise it when torches look too weak on dark faces, 1.0 turns the boost off

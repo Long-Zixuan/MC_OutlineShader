@@ -392,29 +392,47 @@ void main()
 	vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y * sBright)).rgb;
 
 	// Calculate the block light contribution (difference between full and ambient)
-	vec3 blockLightContribution = lMapFull - lMapAmbient;
+	vec3 blockLightContribution = max(vec3(0.0), lMapFull - lMapAmbient);
 
-	// Scale the contribution by intensity, then add back to ambient
-	vec3 lMap = lMapAmbient + (blockLightContribution * BLOCK_LIGHT_INTENSITY);
+	// How much of the sun reaches this face: 0 = sunlit, 1 = in shadow or facing away.
+	// sLight already carries both the shadow map visibility and the N·L facing term,
+	// and it can overshoot 1 on lit faces, hence the clamp.
+	float shadowAmount = clamp(1.0 - dot(sLight, vec3(1.0 / 3.0)), 0.0, 1.0);
 
-	lMap *= color.a;
+	// Sky light and block light are kept apart here.
+	// The sun terms below (shadow visibility, N·L, LAMBERT_MODE) only describe how
+	// much *sky* light reaches a face. Applying them to the block light as well is
+	// what made torches almost disappear on back-lit faces: a west/east face already
+	// gets 0.6 from the vertex colour, the facing term takes another ~0.5 and the
+	// 0.8 intensity left a torch at ~25% of its real strength. Block lights are
+	// local, so they are added after the sun terms, at full strength, plus the
+	// extra shadow boost while the face receives no sun.
+	vec3 skyLight = lMapAmbient * color.a;
+	vec3 blockLight = blockLightContribution * color.a
+		* (BLOCK_LIGHT_INTENSITY * mix(1.0, BLOCK_LIGHT_SHADOW_BOOST, shadowAmount));
+
 	sBright += (1.0 - lVis) * (1.0 - sBright);
-	lMap += sLight * (1.0 - sBright);
-
-    vec3 shad;
+	skyLight += sLight * (1.0 - sBright);
 
     #if CEL == 1
-        float mr = min(0.9999,lMap.r);
-        float m = texture2D(ramptex,vec2(mr, 0.5)).a * 1.2;
-        lMap = vec3(m);
+        // Cel shading ramps the light into flat bands. The block light share of the
+        // ramp is split off again afterwards, so the sun terms below cannot dim
+        // torches while the banding (and the flat colour) of the cel look is kept.
+        vec3 totalLight = skyLight + blockLight;
+        vec3 ramped = vec3(texture2D(ramptex, vec2(min(0.9999, totalLight.r), 0.5)).a * 1.2);
+        float blockShare = clamp(blockLight.r / max(totalLight.r, 1e-4), 0.0, 1.0);
+        blockLight = ramped * blockShare;
+        skyLight = ramped - blockLight;
     #endif
+
+    vec3 shad;
 
      // Non-emissive blocks: normal lighting
     #if ENABLE_DIRECTIONAL_LIGHTING == 1
         vec3 lambertCol = texture2D(ramptex,vec2(lambert, 0.5)).rgb;
-        shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * lMap;
+        shad = ((skyColor*.5+.2) * (vec3(1) - lambertCol) + lambertCol) * skyLight + blockLight;
     #else
-        shad = vec3(1) * lMap;
+        shad = vec3(1) * skyLight + blockLight;
     #endif
         
 #endif // ENABLE_SHADOWS == 0
