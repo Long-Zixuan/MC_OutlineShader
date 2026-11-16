@@ -244,6 +244,13 @@ void main()
     // Apply vertex color (biome tinting)
     col.rgb *= color.rgb;
 
+    // gl_Color.a must reach the output alpha (vanilla does texture.a * Color.a).
+    // Terrain / entity models carry a == 1.0 so nothing changes there, but every
+    // quad whose render type modulates alpha - the vanilla entity shadow blob,
+    // alpha-tinted entity parts, text - needs it, otherwise its alpha collapses
+    // to the raw sprite alpha and the soft shadow blob turns into solid black.
+    col.a *= color.a;
+
     // ======================= LIGHTING =======================
     // `shad` is the light factor that is multiplied into the texture color at the end.
     // It is declared inside each branch below.
@@ -407,8 +414,18 @@ void main()
 	// 0.8 intensity left a torch at ~25% of its real strength. Block lights are
 	// local, so they are added after the sun terms, at full strength, plus the
 	// extra shadow boost while the face receives no sun.
-	vec3 skyLight = lMapAmbient * color.a;
-	vec3 blockLight = blockLightContribution * color.a
+	//
+	// gl_Color.a must NOT be used as a light multiplier here.
+	// This pack does not enable "separateAo", so the vanilla AO lives in
+	// gl_Color.rgb and is already applied above by `col.rgb *= color.rgb`.
+	// For terrain gl_Color.a is 1.0, but for the non-terrain programs that share
+	// this shader (entities, block entities, the hand, particles) the a component
+	// is a tint/alpha value and is frequently 0.0 - multiplying the light by it
+	// zeroed both the sky light and the block light term, which turned an entity
+	// standing in an occluded spot pitch black while the terrain around it
+	// (a == 1.0) stayed correctly lit.
+	vec3 skyLight = lMapAmbient;
+	vec3 blockLight = blockLightContribution
 		* (BLOCK_LIGHT_INTENSITY * mix(1.0, BLOCK_LIGHT_SHADOW_BOOST, shadowAmount));
 
 	sBright += (1.0 - lVis) * (1.0 - sBright);

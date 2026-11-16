@@ -159,6 +159,18 @@ void main()
     // Apply vertex color
     col.rgb *= color.rgb;
 
+    // gl_Color.a must reach the output alpha. The most visible case is the vanilla
+    // entity shadow (the "misc/shadow.png" blob drawn under every entity as a
+    // translucent quad, which lands in this program because it is translucent):
+    // vanilla's rendertype_entity_shadow does
+    //     fragColor = vec4(0, 0, 0, texture.a * vertexColor.a);
+    // and that vertexColor.a is the light dependent shadow density (strong in the
+    // dark, faint in daylight). Dropping it left alpha = texture.a only, so the
+    // whole blob rendered fully opaque - a pitch black hole on the ground instead
+    // of a soft shadow. It also keeps alpha-tinted translucent entity parts
+    // (slime, ghast, ...) and stained glass fading like vanilla.
+    col.a *= color.a;
+
     // WATER-SPECIFIC SHADOW CALCULATION
     vec3 sLight = vec3(1.0);
 	float shadowFactor = 1.0; // Add this to track shadow strength
@@ -240,8 +252,11 @@ void main()
 
 	// Sky light and block light are kept apart, exactly like in gbuffers_textured.fsh:
 	// the sun terms below must not dim torches on faces the sun does not reach.
-	vec3 skyLight = lMapAmbient * color.a;
-	vec3 blockLight = blockLightContribution * color.a
+	// gl_Color.a is deliberately not used here either - without "separateAo" the AO
+	// is already in gl_Color.rgb, and for non-terrain geometry a is a tint alpha
+	// that can be 0.0 (see the detailed comment in gbuffers_textured.fsh).
+	vec3 skyLight = lMapAmbient;
+	vec3 blockLight = blockLightContribution
 		* (BLOCK_LIGHT_INTENSITY * mix(1.0, BLOCK_LIGHT_SHADOW_BOOST, shadowAmount));
 
 	sBright += (1.0 - lVis) * (1.0 - sBright);
