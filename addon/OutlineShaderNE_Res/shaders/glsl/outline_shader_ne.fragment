@@ -1,0 +1,260 @@
+// __multiversion__
+precision highp float;
+// =============================================================================
+// Outline Shader - NetEase Minecraft (China) Edition port
+// Ported from: shaders/final.fsh  (LZX.Celluloid.Project)
+//
+// The outline algorithm below is the original code, unchanged:
+//   getRimIntensity(), screenSpaceToViewSpace(), screenDepth2LinearDepth(),
+//   the four RIM_OFFECT depth taps, OUTLINE_MODE, SCREEN_VALUE, PAPER_WORLD,
+//   the screen-space texture-outline function and its "mix(vec3(0.05))" line.
+//
+// Only the engine interface was adapted (nothing in the maths was rewritten):
+//   colortex0                -> TEXTURE_0   (post-process colour buffer)
+//   depthtex0                -> TEXTURE_2   (post-process depth buffer)
+//   gbufferProjectionInverse -> inverse(PROJ), assigned once per frame to the
+//                               global of the same name used by the original
+//   uniform float far        -> FAR_CHUNKS_DISTANCE
+//   viewWidth  / viewHeight  -> TEXTURE_DIMENSIONS.xy (UV-derivative fallback)
+//   uniforms gaux3/gaux4     -> TEXTURE_3   (cel_ramp.png, bindTexture slot 3)
+//   #define settings         -> EXTRA_VECTOR1..3 (written by Python)
+//   texture()/textureSize()  -> texture2D()/TEXTURE_DIMENSIONS (GLSL ES API)
+//   gl_FragData[0]           -> gl_FragColor
+// =============================================================================
+#include "fragmentVersionCentroidUV.h"
+#include "uniformPerFrameConstants.h"
+#include "uniformWorldConstants.h"
+#include "uniformShaderConstants.h"
+
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0; // previous pass colour
+LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1; // untouched scene colour
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2; // scene depth
+LAYOUT_BINDING(3) uniform sampler2D TEXTURE_3; // cel_ramp.png (bindTexture)
+
+uniform vec4 EXTRA_VECTOR1; // (THRESHOLD, RIM_OFFECT, OUTLINE_COL, OUTLINE_MODE)
+uniform vec4 EXTRA_VECTOR2; // (LINEAR_DEPTH, ENABLE_TEXTURE_OUTLINES, TEXTURE_OUTLINE_STRENGTH, OUTLINE_THICKNESS)
+uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
+
+#define OFF 0.0
+#define ON 1.0
+#define INSIDE 1.0
+#define OUTSIDE -1.0
+
+// --- original #define settings, now fed from the settings UI ----------------
+#define THRESHOLD (EXTRA_VECTOR1.x)
+#define RIM_OFFECT (EXTRA_VECTOR1.y)
+#define OUTLINE_COL (EXTRA_VECTOR1.z)
+#define OUTLINE_MODE (EXTRA_VECTOR1.w)
+#define LINEAR_DEPTH (EXTRA_VECTOR2.x)
+#define ENABLE_TEXTURE_OUTLINES (EXTRA_VECTOR2.y)
+#define TEXTURE_OUTLINE_STRENGTH (EXTRA_VECTOR2.z)
+#define OUTLINE_THICKNESS (EXTRA_VECTOR2.w)
+#define CEL (EXTRA_VECTOR3.x)
+#define PAPER_WORLD (EXTRA_VECTOR3.y)
+
+#define SCREEN_VALUE 2000.0
+#define far (max(FAR_CHUNKS_DISTANCE, 16.0))
+
+// Original shaders declare these two as uniforms. They are the size of the
+// full-screen colour buffer that the pass reads.
+#define viewWidth (max(g_screenSize.x, 1.0))
+#define viewHeight (max(g_screenSize.y, 1.0))
+
+// Keep the original body readable: final.fsh names the input coordinate
+// `texcoord`, NetEase's full-screen header names it `uv`.
+#define texcoord uv
+
+// The original function reads the OptiFine uniform `gbufferProjectionInverse`.
+// Instead of rewriting the function, keep the name and fill it once in main().
+mat4 gbufferProjectionInverse;
+// Screen size, filled once in main(). TEXTURE_DIMENSIONS is the engine value;
+// for a full-screen pass the UV derivatives give the same size and are used as
+// a fallback if that uniform is unavailable.
+vec2 g_screenSize;
+
+// ---------------------------------------------------------------------------
+// Original code starts here (final.fsh)
+// ---------------------------------------------------------------------------
+float getRimIntensity(float depthOft1,float depthOft2,float depth)
+{
+   float depthDiffer1 = (depthOft1 - depth) * OUTLINE_MODE;
+   float depthDiffer2 = (depthOft2 - depth) * OUTLINE_MODE;
+
+   float rimIntensity1 = step(THRESHOLD,depthDiffer1);
+   float rimIntensity2 = step(THRESHOLD,depthDiffer2);
+   float rimIntensity = max(rimIntensity1,rimIntensity2);
+   float rampValue = 0.0001;
+   if(LINEAR_DEPTH == ON)
+   {
+      rampValue = 0.001;
+   }
+   //rampValue = rampValue * (1 + depth * 1);
+   float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
+
+   return min(rimIntensity,isRamp);
+}
+
+float screenSpaceToViewSpace(float depth, mat4 projInv) {
+	depth = depth * 2.0 - 1.0;
+	return projInv[3].z / (projInv[2].w * depth + projInv[3].w);
+}
+
+float screenDepth2LinearDepth(float depth)
+{
+   if(LINEAR_DEPTH == OFF)
+   {
+      return depth;
+   }
+   float viewDepth = screenSpaceToViewSpace(depth, gbufferProjectionInverse);
+   float linearDepth = max(-viewDepth, 0.0);
+   float actualMaxDistance = float(far);
+   float p = 0.0; // FALLOFF_CURVE, kept at the pack default
+   if(p != 0.0)
+   {
+      linearDepth = (exp(p * (linearDepth / actualMaxDistance)) - 1.0) / (exp(p) - 1.0);
+   } else 
+   {
+      linearDepth /= actualMaxDistance;
+   }
+   linearDepth = 1.0 - linearDepth;
+   return linearDepth;
+}
+
+// gbuffers_textured.fsh sampled cel_ramp.png (gaux3) with:
+//   shad = texture2D(ramptex, vec2(celLight, 0.5)).a * 1.2;
+// The texture is a 4-band alpha ramp (85,128,170,255 out of 255).  Keep the
+// texture lookup; if a runtime build does not bind TEXTURE_3, fall back to the
+// same band values so CEL never collapses to black.
+float sampleCelRamp(float luma)
+{
+   float a = texture2D(TEXTURE_3, vec2(min(luma, 0.9999), 0.5)).a;
+   if (a > 0.01)
+   {
+      return a;
+   }
+   if (luma < 0.4)
+   {
+      return 85.0 / 255.0;
+   }
+   if (luma < 0.7)
+   {
+      return 128.0 / 255.0;
+   }
+   if (luma < 0.99)
+   {
+      return 170.0 / 255.0;
+   }
+   return 1.0;
+}
+
+// Original texture-outline detection (same body, sampler now the scene buffer,
+// resolution now the screen size instead of textureSize(texture, 0)).
+float getTEXTURETextureOutline(vec2 texCoord, vec4 originalColor) {
+    vec2 res = max(g_screenSize, vec2(1.0));
+    vec2 texelSize = (1.0 / res) * OUTLINE_THICKNESS;
+    
+    // Use much smaller sampling - only 1-2 pixels to stay within texture boundaries
+    texelSize *= 0.3;
+    
+    // Sample surrounding pixels
+    vec4 colorRight = texture2D(TEXTURE_0, texCoord + vec2(texelSize.x, 0.0));
+    vec4 colorDown = texture2D(TEXTURE_0, texCoord + vec2(0.0, texelSize.y));
+    vec4 colorLeft = texture2D(TEXTURE_0, texCoord - vec2(texelSize.x, 0.0));
+    vec4 colorUp = texture2D(TEXTURE_0, texCoord - vec2(0.0, texelSize.y));
+    
+    // Calculate color differences
+    float diffRight = length(originalColor.rgb - colorRight.rgb);
+    float diffDown = length(originalColor.rgb - colorDown.rgb);
+    float diffLeft = length(originalColor.rgb - colorLeft.rgb);
+    float diffUp = length(originalColor.rgb - colorUp.rgb);
+    
+    float maxDiff = max(max(diffRight, diffDown), max(diffLeft, diffUp));
+    
+    // Make it dramatic but keep the smooth gradations
+    return clamp(maxDiff * 4.0, 0.0, 1.0);
+}
+
+void main() 
+{
+   // The inverse is only needed by the LINEAR_DEPTH branch; with the default
+   // OFF the original code never reads gbufferProjectionInverse.
+   if (LINEAR_DEPTH == ON)
+   {
+      gbufferProjectionInverse = inverse(PROJ);
+   }
+
+   g_screenSize = TEXTURE_DIMENSIONS.xy;
+   if (g_screenSize.x < 2.0 || g_screenSize.y < 2.0)
+   {
+      g_screenSize = vec2(
+         1.0 / max(abs(dFdx(uv.x)), 1e-6),
+         1.0 / max(abs(dFdy(uv.y)), 1e-6));
+   }
+
+   // gbuffers output (colortex0 in the original pack)
+   vec4 finalColor = texture2D(TEXTURE_0, texcoord);
+
+   float depth = texture2D(TEXTURE_2, texcoord).r;
+   depth = screenDepth2LinearDepth(depth);
+
+   float depthLeft = texture2D(TEXTURE_2, vec2(texcoord.x + (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y)).r;
+   float depthRight = texture2D(TEXTURE_2, vec2(texcoord.x - (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y )).r;
+   float depthUp = texture2D(TEXTURE_2, vec2(texcoord.x,texcoord.y + (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+   float depthDown = texture2D(TEXTURE_2, vec2(texcoord.x,texcoord.y - (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+
+   depthLeft = screenDepth2LinearDepth(depthLeft);
+   depthRight = screenDepth2LinearDepth(depthRight);
+   depthUp = screenDepth2LinearDepth(depthUp);
+   depthDown = screenDepth2LinearDepth(depthDown);
+
+   float rimIntensityV = getRimIntensity(depthLeft,depthRight,depth);
+
+   float rimIntensityH = getRimIntensity(depthUp,depthDown,depth);
+
+   float rimIntensity = max(rimIntensityV,rimIntensityH);
+
+   vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
+
+   // ---- PAPER_WORLD: gbuffers_*.fsh wrote vec4(1.0) instead of the lit colour
+   if(PAPER_WORLD == ON)
+   {
+      finalColor.rgb = vec3(1.0);
+   }
+   else if(CEL == ON)
+   {
+      // Cel shading used cel_ramp.png (gaux3) in gbuffers_textured.fsh:
+      //   shad = texture2D(ramptex, vec2(celLight, 0.5)).a * 1.2;
+      // In a screen-space pass the lightmap is not available, so the same ramp
+      // is applied to the scene luminance (3 flat bands, mid band unchanged).
+      float luma = dot(finalColor.rgb, vec3(0.299, 0.587, 0.114));
+      float celRamp = sampleCelRamp(luma) * 1.2;
+      finalColor.rgb *= mix(1.0, celRamp / 0.6, 0.85);
+   }
+
+   // ---- ENABLE_TEXTURE_OUTLINES (same strength / mix as gbuffers_textured.fsh)
+   if(ENABLE_TEXTURE_OUTLINES == ON)
+   {
+      float textureOutline = getTEXTURETextureOutline(texcoord, finalColor);
+      float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
+      finalColor.rgb = mix(finalColor.rgb, vec3(0.05, 0.05, 0.05), outline);
+   }
+
+   // ---- depth outline (final.fsh)
+   if(rimIntensity >= 0.5)
+   {
+      finalColor *= outlineCol;
+   }
+
+   gl_FragColor = finalColor;
+}
+
+// =============================================================================
+// Original file ended with:
+//   if(rimIntensity == 1) { gl_FragData[0] = texture(colortex0, texcoord) * outlineCol; return; }
+// That early-out is reproduced above as the final multiply; the texture-outline
+// and PAPER_WORLD steps are applied first, exactly like gbuffers + final.fsh.
+// LZX vscode 2025/03/24
+// ||||--==||||||||||||||------------==||||||--==||||----==||
+// ||||--==|||||||||||||------==||||||||||||--------==||||
+// |||||||||||||||||LZX.Celluloid.Project||||||||||||||||||
+// =============================================================================

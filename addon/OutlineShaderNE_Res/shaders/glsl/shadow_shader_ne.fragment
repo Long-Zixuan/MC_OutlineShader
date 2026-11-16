@@ -1,0 +1,118 @@
+// __multiversion__
+precision highp float;
+// =============================================================================
+// Outline Shader - NetEase Minecraft (China) Edition port
+// Screen-space companion pass for the pack's Shadow screen.
+//
+// Why this file exists:
+//   The legacy NetEase renderer (OpenGL, non-RenderDragon) exposes no shadow
+//   map, no light map and no g-buffer normals to a post-process shader.  The
+//   original gbuffers_textured.fsh shadow code (shadowtex0/1, shadowcolor0,
+//   shadowProjection, PCF, ...) therefore cannot run as-is.  The pack's shadow
+//   settings are instead driven into a depth-based screen-space shadow term so
+//   that every original slider still has an effect.
+//
+//   This pass does NOT touch the outline algorithm: that lives, unchanged, in
+//   outline_shader_ne.fragment.
+//
+// Uniform mapping (set from Python by OutlineShaderNEClient.py):
+//   EXTRA_VECTOR1 = (ENABLE_SHADOWS, SHADOW_BRIGHTNESS, SHADOW_DISTANCE, SOFT_SHADOWS)
+//   EXTRA_VECTOR2 = (shadowMapResolution, BLOCK_LIGHT_INTENSITY,
+//                    BLOCK_LIGHT_SHADOW_BOOST, Shininess)
+// =============================================================================
+#include "fragmentVersionCentroidUV.h"
+#include "uniformPerFrameConstants.h"
+#include "uniformWorldConstants.h"
+#include "uniformShaderConstants.h"
+
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0; // previous pass colour
+LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1; // untouched scene colour
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2; // scene depth
+
+uniform vec4 EXTRA_VECTOR1;
+uniform vec4 EXTRA_VECTOR2;
+
+mat4 gbufferProjectionInverse;
+vec2 g_screenSize;
+
+float viewSpaceDepth(vec2 coord)
+{
+    float z = texture2D(TEXTURE_2, coord).r;
+    vec4 pos_clip = vec4(coord * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);
+    vec4 pos_view = gbufferProjectionInverse * pos_clip;
+    return max(-pos_view.z / max(pos_view.w, 1e-6), 0.0);
+}
+
+void main()
+{
+    g_screenSize = TEXTURE_DIMENSIONS.xy;
+    if (g_screenSize.x < 2.0 || g_screenSize.y < 2.0)
+    {
+        g_screenSize = vec2(
+            1.0 / max(abs(dFdx(uv.x)), 1e-6),
+            1.0 / max(abs(dFdy(uv.y)), 1e-6));
+    }
+
+    vec4 color = texture2D(TEXTURE_0, uv);
+
+    float enable = EXTRA_VECTOR1.x;
+    float shadowBrightness = clamp(EXTRA_VECTOR1.y, 0.0, 1.0);
+    float shadowDistance = EXTRA_VECTOR1.z;
+    float softShadows = EXTRA_VECTOR1.w;
+    float resolution = max(EXTRA_VECTOR2.x, 512.0);
+    float blockLightIntensity = max(EXTRA_VECTOR2.y, 0.0);
+    float blockLightBoost = max(EXTRA_VECTOR2.z, 1.0);
+    float shininess = clamp(EXTRA_VECTOR2.w, 0.0, 1.0);
+
+    float occlusion = 0.0;
+
+    if (enable > 0.5)
+    {
+        gbufferProjectionInverse = inverse(PROJ);
+        float center = viewSpaceDepth(uv);
+        vec2 texel = 1.0 / max(g_screenSize, vec2(2.0));
+        float radius = mix(4.0, 9.0, step(0.5, softShadows));
+        // 512 -> 4 taps ... 8192 -> 8 taps (six is plenty for a screen-space term)
+        int samples = int(clamp(4.0 + log2(max(resolution, 512.0) / 512.0), 4.0, 8.0));
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (i >= samples) break;
+            float angle = float(i) * 0.7853981634 + 0.3926990817;
+            vec2 dir = vec2(cos(angle), sin(angle)) * texel * radius;
+            float neighbour = viewSpaceDepth(uv + dir);
+            float diff = center - neighbour;
+            occlusion += clamp(diff / max(center * 0.10, 0.25), 0.0, 1.0) * step(0.08, diff);
+        }
+        occlusion /= float(samples);
+
+        if (shadowDistance > 0.0)
+        {
+            occlusion *= 1.0 - smoothstep(shadowDistance * 0.70, shadowDistance, center);
+        }
+
+        // SHADOW_BRIGHTNESS is the light level left on an occluded surface.
+        color.rgb *= mix(1.0, shadowBrightness, clamp(occlusion, 0.0, 1.0));
+
+        // BLOCK_LIGHT_INTENSITY / BLOCK_LIGHT_SHADOW_BOOST.
+        // The original multiplies the block-light contribution and boosts it
+        // on faces the sun does not reach.  Bright scene pixels are the closest
+        // screen-space stand-in for "this pixel is lit by a torch/lantern".
+        float luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+        float blockMask = smoothstep(0.55, 0.90, luma);
+        float blockScale = blockLightIntensity * mix(1.0, blockLightBoost, clamp(occlusion, 0.0, 1.0));
+        color.rgb *= mix(1.0, blockScale, blockMask);
+    }
+
+    // Shininess: water highlight.  No normal or light direction is available in
+    // this renderer, so it is reproduced as a specular-looking highlight on the
+    // brightest scene pixels (0 at the default value of 0.0).
+    if (shininess > 0.001)
+    {
+        float luma2 = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+        float spec = pow(clamp(luma2, 0.0, 1.0), 16.0);
+        color.rgb += vec3(spec * shininess * 0.8);
+    }
+
+    gl_FragColor = color;
+}
