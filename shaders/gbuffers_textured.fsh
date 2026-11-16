@@ -45,6 +45,7 @@ varying float id;
 varying vec3 vPos;
 varying vec4 N;
 varying float emissiveFlag;
+varying float terrainFlag;
 
 #if CEL == ON
 #define ramptex gaux3
@@ -197,21 +198,14 @@ void main()
     vec3 dir = normalize((gbufferModelViewInverse * vec4(shadowLightPosition,0)).xyz);//将摄像机坐标系下光源向量从摄像机坐标转为世界坐标
     float flip = clamp(dir.y/.1,-1.,1.); dir *= flip;//避免晚上出现反着打光
     vec3 norm = normalize(cross(dFdx(world),dFdy(world)));//对坐标求导 叉乘求法线
-#ifdef IS_IRIS
+
     #if LAMBERT_MODE == HALF_LAMBERT
     float lambert = (id>1.5)?pow(dir.y*.5+.5,2):pow(dot(norm,dir)*0.5+0.5,2);
     #endif
     #if LAMBERT_MODE == LAMBERT
     float lambert = (id>1.5)?dir.y:dot(norm,dir);
     #endif
-#else
-    #if LAMBERT_MODE == HALF_LAMBERT
-    float lambert = pow(dir.y*.5+.5,2);
-    #endif
-    #if LAMBERT_MODE == LAMBERT
-    float lambert = (id>1.5)?dir.y:dot(norm,dir);
-    #endif
-#endif
+
     float sun = exp((dot(reflect(normalize(world),norm),dir)-1.)*15.*(1.5-.5*flip));
     vec4 shine = vec4(vec3(sun)*flip*flip,0)*Shininess*step(.9,id)*step(id,1.1);
 
@@ -281,6 +275,27 @@ void main()
         float celLight = min(0.9999, max(shad.r, max(shad.g, shad.b)));
         shad = vec3(texture2D(ramptex, vec2(celLight, 0.5)).a * 1.2);
     #endif
+
+    // Vanilla entity lighting: minecraft_mix_light() from
+    // assets/minecraft/shaders/include/light.glsl
+    //   lightAccum = min(1, (max(0, dot(L0, n)) + max(0, dot(L1, n))) * 0.6 + 0.4)
+    // with the two fixed world-space diffuse directions (0.2, 1, -0.7) and
+    // (-0.2, 1, 0.7): top bright, bottom dark, sides in between.
+    // Terrain is excluded - it already has the per-face factor in gl_Color
+    // (oldLighting). Terrain is the only geometry that carries mc_Entity.y (+-1)
+    // and at_midBlock, so terrainFlag identifies it (see the vertex shader).
+    vec3 normalWorld = mat3(gbufferModelViewInverse) * N.xyz;
+    float normalLenSq = dot(normalWorld, normalWorld);
+    // Text / billboards have no normal (gl_Normal == 0): normalLenSq is 0 / NaN,
+    // so the comparison fails and they stay lightmap-only.
+    if (terrainFlag < 0.5 && normalLenSq > 0.5) {
+        normalWorld *= inversesqrt(normalLenSq);
+        vec3 lightDir0 = normalize(vec3(0.2, 1.0, -0.7));
+        vec3 lightDir1 = normalize(vec3(-0.2, 1.0, 0.7));
+        float light0 = max(0.0, dot(lightDir0, normalWorld));
+        float light1 = max(0.0, dot(lightDir1, normalWorld));
+        shad *= min(1.0, (light0 + light1) * 0.6 + 0.4);
+    }
 #else
     // ---------------- Shadowed / stylised lighting (existing behaviour) ----------------
     #ifdef IS_IRIS

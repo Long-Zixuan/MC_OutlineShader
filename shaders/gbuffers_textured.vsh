@@ -23,6 +23,7 @@ varying vec3 shadowPos;
 varying vec3 vPos;
 varying vec4 N;
 varying float emissiveFlag;
+varying float terrainFlag;
 
 void main()
 {
@@ -54,6 +55,13 @@ void main()
     // Calculate normal for directional lighting
     N.xyz = normalize(gl_NormalMatrix * gl_Normal);
     N.a = (mc_Entity.x == 1) ? 1.0 : 0.0; // Water flag
+
+    // Terrain is the only geometry that has a block render type (mc_Entity.y = +-1)
+    // and the at_midBlock attribute. Entities / particles / text get neither (0).
+    terrainFlag = max(
+        step(0.5, abs(mc_Entity.y)),
+        step(1e-6, dot(at_midBlock.xyz, at_midBlock.xyz))
+    );
         
     gl_Position = gl_ProjectionMatrix * gbufferModelView * vec4(pos,1);
     gl_FogFragCoord = length(pos);
