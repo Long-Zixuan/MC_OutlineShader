@@ -170,51 +170,8 @@ class LSOutlineShaderNEClient(ClientSystem):
         except Exception:
             pass
 
-    def OnScriptTickClient(self, args):
+    def OnScriptTickClient(self): #只能说这里面写的东西都很冗余啊，而且会引发很多bug，而且原本传参错了还一直报错
         self._ticks += 1
-
-        # Verify that PushScreen actually put our screen on top; retry once,
-        # then fall back to CreateUI (some SDK builds reject PushScreen here).
-        if self._pending_push_check and self._ticks - self._push_check_tick >= 5:
-            self._pending_push_check = False
-            try:
-                top = str(clientApi.GetTopUI())
-                print("[LSOutlineShaderNE] top UI after open: %s" % top)
-                if S.UI_NAMESPACE not in top and not top.endswith("main"):
-                    if not self._push_retried:
-                        self._push_retried = True
-                        clientApi.PushScreen(S.MOD_NAMESPACE, S.UI_KEY)
-                        print("[LSOutlineShaderNE] PushScreen retried")
-                        self._pending_push_check = True
-                        self._push_check_tick = self._ticks
-                    else:
-                        ui = clientApi.CreateUI(S.MOD_NAMESPACE, S.UI_KEY,
-                                                {"isHud": 1})
-                        print("[LSOutlineShaderNE] CreateUI fallback -> %s"
-                              % (ui is not None))
-                        if ui is not None:
-                            self._custom_ui_open = True
-            except Exception as exc:
-                print("[LSOutlineShaderNE] GetTopUI failed: %s" % exc)
-
-        # UiInitFinished can be missed on some builds; retry gently.
-        if not self._ui_ready and self._ticks % 20 == 0 and self._ui_tries < 60:
-            self._ui_tries += 1
-            self.RegisterCustomUI()
-            self.RegisterSettings()
-
-        # AddPostProcess may fail while the world is still loading; retry.
-        if not self._processes_ready and self._ticks % 40 == 0:
-            self.Apply()
-
-        # Re-assert values now and then (world reload / dimension change).
-        if self._processes_ready and self._ticks % 150 == 0:
-            self.Apply()
-
-        # Slider callbacks can fire every frame; write the config on a timer.
-        if self._dirty and self._ticks % 20 == 0:
-            self._save_config()
-            self._dirty = False
 
     # ------------------------------------------------------------------ config
     def _load_config(self):
