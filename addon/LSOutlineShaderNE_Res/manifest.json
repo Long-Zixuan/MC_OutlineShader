@@ -1,18 +1,30 @@
 {
-  "format_version": 1,
-  "header": {
-    "name": "LS Outline Shader NE - Resources",
-    "description": "NetEase Minecraft (China) port of the Outline Shader pack. GLSL post-process materials and textures.",
-    "uuid": "0895bbe7-90ea-41b9-8813-9f7c3055f7eb",
-    "version": [1, 0, 0],
-    "min_engine_version": [1, 18, 0]
-  },
   "modules": [
     {
-      "description": "Outline Shader NE shaders and materials",
       "type": "resources",
       "uuid": "9ae15709-7ab0-435b-b243-a160b917f0cb",
-      "version": [1, 0, 0]
+      "version": [
+        1,
+        0,
+        1
+      ],
+      "description": "Outline Shader NE shaders and materials"
     }
-  ]
+  ],
+  "header": {
+    "uuid": "0895bbe7-90ea-41b9-8813-9f7c3055f7eb",
+    "version": [
+      1,
+      0,
+      1
+    ],
+    "name": "LS Outline Shader NE - Resources",
+    "description": "NetEase Minecraft (China) port of the Outline Shader pack. GLSL post-process materials and textures.",
+    "min_engine_version": [
+      1,
+      18,
+      0
+    ]
+  },
+  "format_version": 1
 }

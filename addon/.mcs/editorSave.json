@@ -1,0 +1,35 @@
+{
+    "Addon": {
+        "EnchantSetting": {
+            "amplifier": 1
+        },
+        "PackResourceSortData": {},
+        "PlayerEffectSetting": {
+            "amplifier": 1,
+            "duration": 10
+        },
+        "PresetInstanceTreeData": []
+    },
+    "UI": {
+        "customPrefabGroupExpand": [],
+        "expandData": {
+            "prefab": {},
+            "screen": {
+                "D:\\MC_MOD\\MC_OutlineShader\\addon\\LSOutlineShaderNE_Res\\ui\\ls_outline_shader.json": [
+                    "/main",
+                    "/main/settings_panel",
+                    "/main/settings_panel/settings_rows",
+                    "/main/settings_panel/settings_rows/row_CEL",
+                    "/main/settings_panel/settings_rows/row_CEL/toggle_CEL",
+                    "/main/settings_panel/settings_rows/row_PAPER_WORLD",
+                    "/main/settings_panel/settings_rows/row_PAPER_WORLD/toggle_PAPER_WORLD",
+                    "/main/settings_panel/settings_rows/row_ENABLE_SHADOWS",
+                    "/main/settings_panel/settings_rows/row_ENABLE_SHADOWS/toggle_ENABLE_SHADOWS",
+                    "/main/settings_panel/settings_rows/row_SOFT_SHADOWS",
+                    "/main/settings_panel/settings_rows/row_SOFT_SHADOWS/toggle_SOFT_SHADOWS",
+                    "/main/settings_panel/settings_rows/row_BLOCK_LIGHT_SHADOW_BOOST"
+                ]
+            }
+        }
+    }
+}

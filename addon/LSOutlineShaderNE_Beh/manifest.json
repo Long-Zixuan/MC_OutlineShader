@@ -1,18 +1,30 @@
 {
-  "format_version": 1,
-  "header": {
-    "name": "LS Outline Shader NE - Behavior",
-    "description": "NetEase Minecraft (China) port of the Outline Shader pack. Runtime settings + post-process driver.",
-    "uuid": "a0ed0cb5-ee87-435c-bc24-71f03dd0de8c",
-    "version": [1, 0, 0],
-    "min_engine_version": [1, 18, 0]
-  },
   "modules": [
     {
-      "description": "Outline Shader NE client scripts",
       "type": "data",
       "uuid": "aab61711-b24f-48c5-8150-fdc35fd23dd3",
-      "version": [1, 0, 0]
+      "version": [
+        1,
+        0,
+        1
+      ],
+      "description": "Outline Shader NE client scripts"
     }
-  ]
+  ],
+  "header": {
+    "uuid": "a0ed0cb5-ee87-435c-bc24-71f03dd0de8c",
+    "version": [
+      1,
+      0,
+      1
+    ],
+    "name": "LS Outline Shader NE - Behavior",
+    "description": "NetEase Minecraft (China) port of the Outline Shader pack. Runtime settings + post-process driver.",
+    "min_engine_version": [
+      1,
+      18,
+      0
+    ]
+  },
+  "format_version": 1
 }

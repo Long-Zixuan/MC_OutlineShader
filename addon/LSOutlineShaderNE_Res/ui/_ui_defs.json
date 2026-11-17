@@ -1,5 +1,5 @@
 {
-  "ui_defs": [
-    "ui/ls_outline_shader.json"
-  ]
+    "ui_defs": [
+        "ui/ls_outline_shader.json"
+    ]
 }
