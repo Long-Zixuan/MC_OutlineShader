@@ -16,7 +16,8 @@
                         "100%"
                     ],
                     "alpha": 1.0,
-                    "texture": "$btn_texture"
+                    "texture": "$btn_texture",
+                    "is_new_nine_slice": true
                 }
             },
             {
