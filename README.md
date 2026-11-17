@@ -1,6 +1,6 @@
-# LS Outline Shader NE（网易我的世界 · 基岩版组件）
+# Outline Shader NE（描边光影 网易我的世界 · 基岩版组件）
 
-把原 OptiFine/Iris 光影包 **Outline Shader（LZX.Celluloid.Project）** 移植到
+把原 OptiFine/Iris 光影包 **Outline Shader** 移植到
 **网易《我的世界》中国版**（基岩引擎 / ModSDK，Python 2 + GLSL 材质系统）。
 
 - 描边算法 **逐行保留** 原 `shaders/final.fsh` 的数学（`getRimIntensity`、
@@ -355,9 +355,6 @@ python ne_be/tools/validate_port.py
 
 ---
 
-## 9. 原包与致谢
-
-- 原光影：**Outline Shader / LZX.Celluloid.Project**（作者 Loongly / LZX）
-- 原包结构：OptiFine/Iris `shaders/`（`final.fsh`、`commonSettings.glsl`、
-  `gbuffers_*`、`shaders.properties`）
-- 本移植只做引擎适配，未修改原描边数学；原包版权归原作者所有。
+## 9. TODO
+1.BUG：切换维度后无法打开设置UI
+2.阴影效果改善
