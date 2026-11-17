@@ -207,12 +207,7 @@ CONTROLS = [
     {"kind": "text", "key": "sec_note_2",
      "label": u"描边算法与原版 final.fsh 完全一致；参数改动会即时生效。"},
 
-    # 底部品牌区。官方通用设置页不支持插入图片，logo 用作本模组的设置页/
-    # 模组列表图标（textures/outline_shader/icon.png），这里放文字签名。
-    {"kind": "text", "key": "footer_brand", "label": u"LONGY SOFTWARE"},
-
-    {"kind": "text", "key": "footer_product",
-     "label": u"Outline Shader · LZX.Celluloid.Project"},
+    {"kind": "text", "key": "footer_brand", "label": u"LOONGLY SOFTWARE 2026"},
 ]
 
 CONTROL_MAP = {}
