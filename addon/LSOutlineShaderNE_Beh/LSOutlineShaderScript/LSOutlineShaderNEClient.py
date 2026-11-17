@@ -19,6 +19,7 @@ except ImportError:  # very old SDK layout
     import client.extraClientApi as clientApi
 
 from LSOutlineShaderScript import ShaderSettings as S
+from LSOutlineShaderScript.LSPrefs import LSPrefs
 
 ClientSystem = clientApi.GetClientSystemCls()
 
@@ -63,7 +64,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         _ACTIVE = self
 
         self._values = S.default_values()
-        self._config_comp = None
+        self._prefs = LSPrefs()
         self._post_comp = None
         self._setting_inst = None
         self._ui_ready = False
@@ -143,6 +144,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         self.CloseCustomUI()
 
     def CloseCustomUI(self):
+        self._save_config()
         self._custom_ui_open = False
         try:
             ui = clientApi.GetUI(S.MOD_NAMESPACE, S.UI_KEY)
@@ -215,25 +217,8 @@ class LSOutlineShaderNEClient(ClientSystem):
             self._dirty = False
 
     # ------------------------------------------------------------------ config
-    def _get_config_comp(self):
-        if self._config_comp is None:
-            try:
-                self._config_comp = clientApi.GetEngineCompFactory().CreateConfigClient(
-                    clientApi.GetLevelId()
-                )
-            except Exception as exc:
-                print("[LSOutlineShaderNE] CreateConfigClient failed: %s" % exc)
-        return self._config_comp
-
     def _load_config(self):
-        comp = self._get_config_comp()
-        if comp is None:
-            return
-        try:
-            data = comp.GetConfigData(S.CFG_NAME, True)
-        except Exception as exc:
-            print("[LSOutlineShaderNE] GetConfigData failed: %s" % exc)
-            return
+        data = self._prefs.load()
         if not isinstance(data, dict):
             return
         for key, value in data.items():
@@ -271,13 +256,10 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._values["OUTLINE_MODE_OUTSIDE"] = (mode == 1)
 
     def _save_config(self):
-        comp = self._get_config_comp()
-        if comp is None:
-            return
-        try:
-            comp.SetConfigData(S.CFG_NAME, dict(self._values), True)
-        except Exception as exc:
-            print("[LSOutlineShaderNE] SetConfigData failed: %s" % exc)
+        ok = self._prefs.save(self._values)
+        if ok:
+            self._dirty = False
+        return ok
 
     # -------------------------------------------------------------------- post
     def _get_post_comp(self):
@@ -387,6 +369,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._values[key] = value
         self._dirty = True
         self.Apply()
+        self._save_config()
 
     def set_ui_mode(self, outside):
         self._values["OUTLINE_MODE"] = 1 if outside else 0
@@ -394,6 +377,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._values["OUTLINE_MODE_OUTSIDE"] = outside
         self._dirty = True
         self.Apply()
+        self._save_config()
 
     def OpenCustomUI(self):
         print("[LSOutlineShaderNE] OpenCustomUI (%s)" % S.UI_JSON_DEF)
@@ -509,6 +493,7 @@ class LSOutlineShaderNEClient(ClientSystem):
 
         self._dirty = True
         self.Apply()
+        self._save_config()
 
     def OnControlChanged(self, key, value):
         spec = S.CONTROL_MAP.get(key)
@@ -532,7 +517,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         else:
             return
 
-        # Mark dirty; OnScriptTickClient flushes to disk every 20 ticks so a
-        # dragged slider does not write the config file every frame.
+        # Mark dirty and write immediately; the tick flush is only a fallback.
         self._dirty = True
         self.Apply()
+        self._save_config()

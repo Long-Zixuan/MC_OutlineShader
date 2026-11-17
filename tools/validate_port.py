@@ -68,6 +68,7 @@ class FakeConfigComp(object):
     def SetConfigData(self, name, value, is_global=False):
         self.store[(name, bool(is_global))] = dict(value)
         return True
+        return True
 
 
 class FakePostComp(object):
@@ -349,6 +350,8 @@ check(post.params[(S.PROCESS_SHADOW, "p_shadow_b")] == [1024.0, 0.8, 1.25, 0.0],
 
 # custom UI host actions
 system.set_ui_value("OUTLINE_COL", 8)
+check((S.CFG_NAME, True) in FACTORY.config.store,
+      "settings saved immediately to global PlayerPrefs/ConfigClient")
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][2] == 0.9,
       "custom UI value reaches the shader")
 

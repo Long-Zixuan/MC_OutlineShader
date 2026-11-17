@@ -247,7 +247,7 @@ PCF_SAMPLE / PCF_BLUR_RADIUS / SHADOW_DISTORTION / FAR_DISTANCE_BIAS_*
 | 加后处理 | `CreatePostProcess(...).AddPostProcess(dict, -1)` | `LSOutlineShaderNEClient._ensure_processes` |
 | 改参数 | `SetParameter(process, paramName, [vec4])` | `LSOutlineShaderNEClient.Apply` |
 | 开关后处理 | `SetEnableByName(process, bool)` | 同上 |
-| 持久化 | `CreateConfigClient(...).Get/SetConfigData(..., isGlobal=True)` | `_load_config` / `_save_config` |
+| 持久化 | `LSPrefs` 封装 `CreateConfigClient(...).Get/SetConfigData(..., isGlobal=True)`，每次修改立即写 | `_load_config` / `_save_config` / `set_ui_value` |
 | 时机 | `UiInitFinished` 注册入口页；`OnScriptTickClient` 兜底重试/保存 | `OnUiInitFinished` / `OnScriptTickClient` |
 
 参数打包（每个后处理最多 4 个 `EXTRA_VECTOR`，这里各用 2~3 个）：

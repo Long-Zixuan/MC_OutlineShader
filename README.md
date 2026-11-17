@@ -34,7 +34,8 @@ ne_be/
 │   │       ├── modMain.py                  # Mod 入口，注册客户端系统
 │   │       ├── LSOutlineShaderNEClient.py    # 设置页入口 + 后处理参数驱动
 │   │       ├── LSOutlineShaderUIScreen.py    # 自定义设置面板（ScreenNode）
-│   │       └── ShaderSettings.py           # 参数表 / 默认值 / 后处理描述
+│   │       ├── LSPrefs.py                    # 全局 PlayerPrefs/ConfigClient 存储
+│   │       └── ShaderSettings.py             # 参数表 / 默认值 / 后处理描述
 │   └── LSOutlineShaderNE_Res/                # 资源包（GLSL + UI）
 │       ├── manifest.json
 │       ├── materials/
@@ -196,6 +197,19 @@ logo 已移出设置面板，放在**屏幕左下角**（红圈位置）：
 `textures/ls_outline_shader/logo.png`，宽度取屏幕的 12%、高 5%，手机和 PC 都会缩放，
 不会挡住面板里的选项。通用设置页/模组列表图标仍是 `icon.png`（256×256）。
 
+### 3.6 全局设置存储
+
+网易 ModSDK 没有单独命名为 `PlayerPrefs` 的客户端组件；官方的全局键值存储是
+`CreateConfigClient(...).GetConfigData/SetConfigData(..., isGlobal=True)`。
+本项目把它封装成 `LSPrefs.py`，并固定 `isGlobal=True`：
+
+- **全局统一**：所有存档共用一份设置，不随存档切换；
+- 每次 `- / +`、开关、模式切换都**立即写入**，关闭面板/Esc 时再写一次；
+- 重新进入任何存档都会自动读取；
+- 首次运行会把旧键 `outline_shader_ne_settings_v1` 迁移到
+  `ls_outline_shader_ne_settings_v1`；
+- 日志里对应 `PlayerPrefs GetConfigData / SetConfigData failed`。
+
 ---
 
 ## 4. 实现要点（为什么这样移植）
@@ -297,7 +311,7 @@ python ne_be/tools/validate_port.py
 | 开「线性深度」后描边异常 | 网易的投影矩阵约定与 OptiFine 不完全相同，建议保持关闭 |
 | CEL 打开后发黑 | `TEXTURE_3`（cel_ramp）没绑上；着色器已内置 85/128/170 的程序化 ramp 回退 |
 | 阴影/高光参数没反应 | 阴影 pass 只在「启用阴影」或「水面高光>0」时启用；且它是屏幕空间近似，不是原版 shadow map |
-| 改了设置重进游戏丢失 | 检查 `CreateConfigClient` 是否可用；日志里的 `GetConfigData/SetConfigData failed` |
+| 改了设置重进游戏丢失 | 设置应写入全局 PlayerPrefs（`ConfigClient(isGlobal=True)`）；看日志 `PlayerPrefs GetConfigData / SetConfigData failed`，确认 `ls_outline_shader_ne_settings_v1` 写入成功 |
 
 日志前缀统一为 `[LSOutlineShaderNE]`。
 
