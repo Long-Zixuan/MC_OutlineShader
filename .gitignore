@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 *.pyo
 **/addon/.mcs/
+addon/world_behavior_packs.json
+addon/world_resource_packs.json
+addon/studio.json
