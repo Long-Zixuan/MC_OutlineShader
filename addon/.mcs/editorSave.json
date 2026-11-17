@@ -19,15 +19,12 @@
                     "/main",
                     "/main/settings_panel",
                     "/main/settings_panel/settings_rows",
-                    "/main/settings_panel/settings_rows/row_CEL",
-                    "/main/settings_panel/settings_rows/row_CEL/toggle_CEL",
-                    "/main/settings_panel/settings_rows/row_PAPER_WORLD",
-                    "/main/settings_panel/settings_rows/row_PAPER_WORLD/toggle_PAPER_WORLD",
-                    "/main/settings_panel/settings_rows/row_ENABLE_SHADOWS",
-                    "/main/settings_panel/settings_rows/row_ENABLE_SHADOWS/toggle_ENABLE_SHADOWS",
-                    "/main/settings_panel/settings_rows/row_SOFT_SHADOWS",
-                    "/main/settings_panel/settings_rows/row_SOFT_SHADOWS/toggle_SOFT_SHADOWS",
-                    "/main/settings_panel/settings_rows/row_BLOCK_LIGHT_SHADOW_BOOST"
+                    "/main/settings_panel/settings_rows/row_RIM_OFFECT",
+                    "/main/settings_panel/settings_rows/row_RIM_OFFECT/dec_RIM_OFFECT",
+                    "/main/settings_panel/settings_rows/row_OUTLINE_MODE",
+                    "/main/settings_panel/settings_rows/row_OUTLINE_MODE/mode_INSIDE",
+                    "/main/settings_panel/settings_rows/row_BLOCK_LIGHT_INTENSITY",
+                    "/main/settings_panel/close"
                 ]
             }
         }

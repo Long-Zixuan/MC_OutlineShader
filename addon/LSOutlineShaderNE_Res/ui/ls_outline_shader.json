@@ -16,8 +16,8 @@
                         "100%"
                     ],
                     "alpha": 1.0,
-                    "texture": "$btn_texture",
-                    "is_new_nine_slice": true
+                    "is_new_nine_slice": true,
+                    "texture": "$btn_texture"
                 }
             },
             {
@@ -421,6 +421,10 @@
                                                     "mode_INSIDE@ls_outline_shader.btn_base": {
                                                         "$label_scale": 0.65,
                                                         "$label_text": "内侧",
+                                                        "offset": [
+                                                            -7,
+                                                            -1
+                                                        ],
                                                         "size": [
                                                             "28%",
                                                             "100%"
@@ -1154,11 +1158,11 @@
                                 "layer": 10,
                                 "offset": [
                                     0,
-                                    8
+                                    0
                                 ],
                                 "size": [
-                                    "100%-16px",
-                                    30
+                                    "100%+-16px",
+                                    15
                                 ]
                             }
                         }
