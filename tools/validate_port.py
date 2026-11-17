@@ -475,6 +475,27 @@ check(S.format_value("THRESHOLD", 0.0001) == "0.0001", "format_value small float
 check(S.format_value("SHADOW_DISTANCE", -1.0) == u"自动", "format_value AUTO")
 check(S.format_value("shadowMapResolution", 1024) == "1024", "format_value resolution")
 
+# ---------------------------------------------------------------------------
+# 6. review manifest requirements (error code 37)
+# ---------------------------------------------------------------------------
+print("6. review manifest requirements")
+for pack_dir, expected_type, marker in (
+        (SCRIPT_DIR, "data", "entities"),
+        (RES_DIR, "resources", "textures")):
+    manifest_path = os.path.join(pack_dir, "manifest.json")
+    manifest = json.load(io.open(manifest_path, "r", encoding="utf-8"))
+    header = manifest.get("header", {})
+    check(manifest.get("format_version") == 1, "format_version 1: " + pack_dir)
+    check(isinstance(header.get("uuid"), str) and len(header["uuid"]) == 36,
+          "header uuid present: " + pack_dir)
+    check(header.get("min_engine_version", []) >= [1, 18, 0],
+          "min_engine_version >= 1.18.0: " + pack_dir)
+    modules = manifest.get("modules", [])
+    check(len(modules) == 1 and modules[0].get("type") == expected_type,
+          "module type %s: %s" % (expected_type, pack_dir))
+    check(os.path.isdir(os.path.join(pack_dir, marker)),
+          "%s/ marker exists: %s" % (marker, pack_dir))
+
 print("")
 if FAILURES:
     print("FAILED: %d check(s)" % len(FAILURES))

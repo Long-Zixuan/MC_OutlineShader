@@ -4,7 +4,8 @@
     "name": "LS Outline Shader NE - Resources",
     "description": "NetEase Minecraft (China) port of the Outline Shader pack. GLSL post-process materials and textures.",
     "uuid": "0895bbe7-90ea-41b9-8813-9f7c3055f7eb",
-    "version": [1, 0, 0]
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 18, 0]
   },
   "modules": [
     {

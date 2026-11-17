@@ -329,11 +329,11 @@ python ne_be/tools/validate_port.py
 | `AddPostProcess(outline) -> False` | 材质名对不上或材质文件没进资源包；检查 `postprocess.material` 里有没有 `ls_outline_shader_ne_outline` |
 | `AddPostProcess` 为 True 但仍无描边 | 检查是否 RenderDragon 客户端；确认 `ls_outline_shader_ne.fragment` 在资源包 `shaders/glsl/` 下 |
 
-6. **MC Studio 报「至少一个资源或行为包加载失败」**：最常见是 `manifest.json` 用了
-   `"format_version": 2`。中国版 MC Studio 目前只吃 **1**，2 是 1.16 模板格式，
-   会被判为无法加载；`min_engine_version` 也建议删掉。本项目两个 manifest 都已改成
-   `format_version: 1`。其次检查：资源包根目录有没有 `textures/`，行为包根目录有没有
-   `entities/`。
+6. **MC Studio 报「至少一个资源或行为包加载失败」**：先检查 `manifest.json`。
+   中国版 MC Studio 用 `"format_version": 1`；同时**审核端要求**
+   `header.min_engine_version >= [1, 18, 0]`（缺失会报打包错误 37）。
+   本项目两个 manifest 都是 `format_version: 1` + `min_engine_version: [1,18,0]`。
+   其次检查：资源包根目录有没有 `textures/`，行为包根目录有没有 `entities/`。
 
 > 注意：暂停菜单 →「模组」里的列表是**通用设置页列表**，只有调用了
 > `RegisterSettingInst` 的模组才会出现；世界设置里的「行为包/资源包」列表是
