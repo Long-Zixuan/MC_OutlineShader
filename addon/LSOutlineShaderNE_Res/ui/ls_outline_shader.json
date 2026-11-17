@@ -1165,6 +1165,24 @@
                                     15
                                 ]
                             }
+                        },
+                        {
+                            "label": {
+                                "type": "label",
+                                "anchor_from": "top_middle",
+                                "offset": [
+                                    -2.5,
+                                    18.5
+                                ],
+                                "size": [
+                                    113,
+                                    20
+                                ],
+                                "font_scale_factor": 1.3,
+                                "font_type": "default",
+                                "text": "描边光影设置",
+                                "text_alignment": "center"
+                            }
                         }
                     ]
                 }

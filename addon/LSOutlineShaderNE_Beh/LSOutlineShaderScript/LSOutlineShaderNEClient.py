@@ -106,6 +106,13 @@ class LSOutlineShaderNEClient(ClientSystem):
             self,
             self.OnKeyPressInGame
         )
+        self.ListenForEvent(
+            clientApi.GetEngineNamespace(),
+            clientApi.GetEngineSystemName(),
+            "DimensionChangeFinishClientEvent",
+            self,
+            self.DimensionChangeFinishClientEvent
+        )
         print("[LSOutlineShaderNE] client system ready")
 
     # ------------------------------------------------------------------ events
@@ -129,14 +136,18 @@ class LSOutlineShaderNEClient(ClientSystem):
 
     def OnUiInitFinished(self, args):
         # The config component can be unavailable during __init__; try again now.
+        print("[LSOutlineShaderNE] UI init finished")
         self._load_config()
         self.RegisterCustomUI()
         self._ui_ready = False
         self.RegisterSettings()
         self.Apply()
 
+    def DimensionChangeFinishClientEvent(self, args):
+        print("[LSOutlineShaderNE] dimension change finished")
+
     def OnKeyPressInGame(self, args):
-        if str(args.get("key", "")) != "27" or not args.get("isDown"):
+        if str(args.get("key", "")) != "27" or not args.get("isDown"): #key 27 是 ESC
             return
         if not self._custom_ui_open:
             return

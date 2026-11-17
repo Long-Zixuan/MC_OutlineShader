@@ -43,6 +43,18 @@ class LSOutlineShaderNEMod(object):
             SCRIPT_ROOT + ".LSOutlineShaderNEClient.LSOutlineShaderNEClient"
         )
         print("[LSOutlineShaderNE] mod init (client)")
+        ls = """
+[LSOutlineShaderNE]
+      ____                                    ____ 
+     /   /                                   /   /   
+    /   /    ____________  ______  _____    /   /    ___ ___ 
+   /   /___ /  _  /  _  / /     / /  _  \\  /   /___ |  //  /
+  /_______/ \\____/\\____/ /  /  /  \\__   / /_______/  \\    /
+ ___________________________________/  /______________/  /
+/___LoongLy Software 2026_______________________________/
+[[LSOutlineShaderNE]:LoongLy:Outline Shader Mod init successful!(描边光影模组初始化成功！)
+        """
+        print(ls)
 
     @Mod.DestroyServer()
     def destroy_server(self):
