@@ -13,9 +13,9 @@ precision highp float;
 //   that every original slider still has an effect.
 //
 //   This pass does NOT touch the outline algorithm: that lives, unchanged, in
-//   outline_shader_ne.fragment.
+//   ls_outline_shader_ne.fragment.
 //
-// Uniform mapping (set from Python by OutlineShaderNEClient.py):
+// Uniform mapping (set from Python by LSOutlineShaderNEClient.py):
 //   EXTRA_VECTOR1 = (ENABLE_SHADOWS, SHADOW_BRIGHTNESS, SHADOW_DISTANCE, SOFT_SHADOWS)
 //   EXTRA_VECTOR2 = (shadowMapResolution, BLOCK_LIGHT_INTENSITY,
 //                    BLOCK_LIGHT_SHADOW_BOOST, Shininess)

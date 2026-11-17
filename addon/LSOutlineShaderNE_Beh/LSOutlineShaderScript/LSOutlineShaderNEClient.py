@@ -6,11 +6,11 @@ Responsibilities
     1. Register the universal settings page (official Python API) and list every
        option of the original shader pack.
     2. Push the selected values into two NetEase post-process effects as
-       EXTRA_VECTOR uniforms (see addon/OutlineShaderNE_Res/shaders/glsl/*.fragment).
+       EXTRA_VECTOR uniforms (see addon/LSOutlineShaderNE_Res/shaders/glsl/*.fragment).
     3. Persist the values in the local config API so they survive a restart.
 
 Nothing here touches the shader maths: the outline algorithm lives in
-outline_shader_ne.fragment and is a line-by-line port of the original final.fsh.
+ls_outline_shader_ne.fragment and is a line-by-line port of the original final.fsh.
 """
 
 try:
@@ -18,7 +18,7 @@ try:
 except ImportError:  # very old SDK layout
     import client.extraClientApi as clientApi
 
-from OutlineShaderScript import ShaderSettings as S
+from LSOutlineShaderScript import ShaderSettings as S
 
 ClientSystem = clientApi.GetClientSystemCls()
 
@@ -41,20 +41,20 @@ def _on_control(*args):
     try:
         _ACTIVE.OnControlChanged(key, value)
     except Exception as exc:
-        print("[OutlineShaderNE] settings callback error: %s" % exc)
+        print("[LSOutlineShaderNE] settings callback error: %s" % exc)
 
 
 def _on_open(*args):
-    print("[OutlineShaderNE] open settings button clicked")
+    print("[LSOutlineShaderNE] open settings button clicked")
     if _ACTIVE is None:
         return
     try:
         _ACTIVE.OpenCustomUI()
     except Exception as exc:
-        print("[OutlineShaderNE] open custom UI failed: %s" % exc)
+        print("[LSOutlineShaderNE] open custom UI failed: %s" % exc)
 
 
-class OutlineShaderNEClient(ClientSystem):
+class LSOutlineShaderNEClient(ClientSystem):
 
     def __init__(self, namespace, systemName):
         ClientSystem.__init__(self, namespace, systemName)
@@ -80,6 +80,7 @@ class OutlineShaderNEClient(ClientSystem):
         self._pending_push_check = False
         self._push_check_tick = 0
         self._push_retried = False
+        self._custom_ui_open = False
 
         self._load_config()
 
@@ -97,7 +98,14 @@ class OutlineShaderNEClient(ClientSystem):
             self,
             self.OnScriptTickClient
         )
-        print("[OutlineShaderNE] client system ready")
+        self.ListenForEvent(
+            clientApi.GetEngineNamespace(),
+            clientApi.GetEngineSystemName(),
+            "OnKeyPressInGame",
+            self,
+            self.OnKeyPressInGame
+        )
+        print("[LSOutlineShaderNE] client system ready")
 
     # ------------------------------------------------------------------ events
     def RegisterCustomUI(self):
@@ -107,16 +115,16 @@ class OutlineShaderNEClient(ClientSystem):
             ok = clientApi.RegisterUI(
                 S.MOD_NAMESPACE,
                 S.UI_KEY,
-                "OutlineShaderScript.OutlineShaderUIScreen.OutlineShaderUIScreen",
+                "LSOutlineShaderScript.LSOutlineShaderUIScreen.LSOutlineShaderUIScreen",
                 S.UI_JSON_DEF
             )
-            print("[OutlineShaderNE] RegisterUI -> %s" % (ok,))
+            print("[LSOutlineShaderNE] RegisterUI -> %s" % (ok,))
             if ok is False or ok == 0:
-                print("[OutlineShaderNE] RegisterUI returned failure")
+                print("[LSOutlineShaderNE] RegisterUI returned failure")
             else:
                 self._ui_registered = True
         except Exception as exc:
-            print("[OutlineShaderNE] RegisterUI failed: %s" % exc)
+            print("[LSOutlineShaderNE] RegisterUI failed: %s" % exc)
 
     def OnUiInitFinished(self, args):
         # The config component can be unavailable during __init__; try again now.
@@ -125,6 +133,40 @@ class OutlineShaderNEClient(ClientSystem):
         self._ui_ready = False
         self.RegisterSettings()
         self.Apply()
+
+    def OnKeyPressInGame(self, args):
+        if str(args.get("key", "")) != "27" or not args.get("isDown"):
+            return
+        if not self._custom_ui_open:
+            return
+        print("[LSOutlineShaderNE] ESC pressed, closing custom UI")
+        self.CloseCustomUI()
+
+    def CloseCustomUI(self):
+        self._custom_ui_open = False
+        try:
+            ui = clientApi.GetUI(S.MOD_NAMESPACE, S.UI_KEY)
+            if ui is not None:
+                ui.SetRemove()
+                return
+        except Exception as exc:
+            print("[LSOutlineShaderNE] GetUI close failed: %s" % exc)
+
+        try:
+            top = str(clientApi.GetTopUI())
+            print("[LSOutlineShaderNE] close top UI: %s" % top)
+            if S.UI_NAMESPACE in top:
+                clientApi.PopTopUI()
+                return
+        except Exception as exc:
+            print("[LSOutlineShaderNE] GetTopUI close failed: %s" % exc)
+
+        # PushScreen may report the screen without its namespace; the flag is
+        # only set after PushScreen, so popping is safe here.
+        try:
+            clientApi.PopTopUI()
+        except Exception:
+            pass
 
     def OnScriptTickClient(self, args):
         self._ticks += 1
@@ -135,21 +177,23 @@ class OutlineShaderNEClient(ClientSystem):
             self._pending_push_check = False
             try:
                 top = str(clientApi.GetTopUI())
-                print("[OutlineShaderNE] top UI after open: %s" % top)
-                if "outline_shader" not in top and not top.endswith("main"):
+                print("[LSOutlineShaderNE] top UI after open: %s" % top)
+                if S.UI_NAMESPACE not in top and not top.endswith("main"):
                     if not self._push_retried:
                         self._push_retried = True
                         clientApi.PushScreen(S.MOD_NAMESPACE, S.UI_KEY)
-                        print("[OutlineShaderNE] PushScreen retried")
+                        print("[LSOutlineShaderNE] PushScreen retried")
                         self._pending_push_check = True
                         self._push_check_tick = self._ticks
                     else:
                         ui = clientApi.CreateUI(S.MOD_NAMESPACE, S.UI_KEY,
                                                 {"isHud": 1})
-                        print("[OutlineShaderNE] CreateUI fallback -> %s"
+                        print("[LSOutlineShaderNE] CreateUI fallback -> %s"
                               % (ui is not None))
+                        if ui is not None:
+                            self._custom_ui_open = True
             except Exception as exc:
-                print("[OutlineShaderNE] GetTopUI failed: %s" % exc)
+                print("[LSOutlineShaderNE] GetTopUI failed: %s" % exc)
 
         # UiInitFinished can be missed on some builds; retry gently.
         if not self._ui_ready and self._ticks % 20 == 0 and self._ui_tries < 60:
@@ -178,7 +222,7 @@ class OutlineShaderNEClient(ClientSystem):
                     clientApi.GetLevelId()
                 )
             except Exception as exc:
-                print("[OutlineShaderNE] CreateConfigClient failed: %s" % exc)
+                print("[LSOutlineShaderNE] CreateConfigClient failed: %s" % exc)
         return self._config_comp
 
     def _load_config(self):
@@ -188,7 +232,7 @@ class OutlineShaderNEClient(ClientSystem):
         try:
             data = comp.GetConfigData(S.CFG_NAME, True)
         except Exception as exc:
-            print("[OutlineShaderNE] GetConfigData failed: %s" % exc)
+            print("[LSOutlineShaderNE] GetConfigData failed: %s" % exc)
             return
         if not isinstance(data, dict):
             return
@@ -233,7 +277,7 @@ class OutlineShaderNEClient(ClientSystem):
         try:
             comp.SetConfigData(S.CFG_NAME, dict(self._values), True)
         except Exception as exc:
-            print("[OutlineShaderNE] SetConfigData failed: %s" % exc)
+            print("[LSOutlineShaderNE] SetConfigData failed: %s" % exc)
 
     # -------------------------------------------------------------------- post
     def _get_post_comp(self):
@@ -243,7 +287,7 @@ class OutlineShaderNEClient(ClientSystem):
                     clientApi.GetLevelId()
                 )
             except Exception as exc:
-                print("[OutlineShaderNE] CreatePostProcess failed: %s" % exc)
+                print("[LSOutlineShaderNE] CreatePostProcess failed: %s" % exc)
         return self._post_comp
 
     def _ensure_processes(self, post):
@@ -253,33 +297,33 @@ class OutlineShaderNEClient(ClientSystem):
             order = post.GetPostProcessOrder()
         except Exception as exc:
             order = None
-            print("[OutlineShaderNE] GetPostProcessOrder failed: %s" % exc)
+            print("[LSOutlineShaderNE] GetPostProcessOrder failed: %s" % exc)
         if not order:
             order = []
 
         if not self._post_logged:
             self._post_logged = True
-            print("[OutlineShaderNE] post-process order: %s" % (order,))
+            print("[LSOutlineShaderNE] post-process order: %s" % (order,))
 
         if S.PROCESS_SHADOW not in order:
             ok = False
             try:
                 ok = post.AddPostProcess(S.build_shadow_process(self._values), -1)
             except Exception as exc:
-                print("[OutlineShaderNE] AddPostProcess(shadow) failed: %s" % exc)
+                print("[LSOutlineShaderNE] AddPostProcess(shadow) failed: %s" % exc)
             if S.PROCESS_SHADOW not in self._add_logged:
                 self._add_logged.add(S.PROCESS_SHADOW)
-                print("[OutlineShaderNE] AddPostProcess(shadow) -> %s" % ok)
+                print("[LSOutlineShaderNE] AddPostProcess(shadow) -> %s" % ok)
 
         if S.PROCESS_OUTLINE not in order:
             ok = False
             try:
                 ok = post.AddPostProcess(S.build_outline_process(self._values), -1)
             except Exception as exc:
-                print("[OutlineShaderNE] AddPostProcess(outline) failed: %s" % exc)
+                print("[LSOutlineShaderNE] AddPostProcess(outline) failed: %s" % exc)
             if S.PROCESS_OUTLINE not in self._add_logged:
                 self._add_logged.add(S.PROCESS_OUTLINE)
-                print("[OutlineShaderNE] AddPostProcess(outline) -> %s" % ok)
+                print("[LSOutlineShaderNE] AddPostProcess(outline) -> %s" % ok)
 
         self._processes_ready = True
         return True
@@ -311,7 +355,7 @@ class OutlineShaderNEClient(ClientSystem):
             ok = post.SetParameter(S.PROCESS_SHADOW, "p_shadow_a", shadow_a) and ok
             ok = post.SetParameter(S.PROCESS_SHADOW, "p_shadow_b", shadow_b) and ok
         except Exception as exc:
-            print("[OutlineShaderNE] SetParameter failed: %s" % exc)
+            print("[LSOutlineShaderNE] SetParameter failed: %s" % exc)
             ok = False
 
         if not ok:
@@ -319,10 +363,10 @@ class OutlineShaderNEClient(ClientSystem):
             self._processes_ready = False
             if not self._warned:
                 self._warned = True
-                print("[OutlineShaderNE] post-process not ready yet; retrying")
+                print("[LSOutlineShaderNE] post-process not ready yet; retrying")
         elif not self._params_logged:
             self._params_logged = True
-            print("[OutlineShaderNE] post-process parameters applied")
+            print("[LSOutlineShaderNE] post-process parameters applied")
 
         master = S.bool_value(values.get("MASTER", True))
         shadow_wanted = master and (
@@ -333,7 +377,7 @@ class OutlineShaderNEClient(ClientSystem):
             post.SetEnableByName(S.PROCESS_OUTLINE, master)
             post.SetEnableByName(S.PROCESS_SHADOW, shadow_wanted)
         except Exception as exc:
-            print("[OutlineShaderNE] SetEnableByName failed: %s" % exc)
+            print("[LSOutlineShaderNE] SetEnableByName failed: %s" % exc)
 
     # ------------------------------------------------------------- custom ui
     def get_ui_values(self):
@@ -352,11 +396,11 @@ class OutlineShaderNEClient(ClientSystem):
         self.Apply()
 
     def OpenCustomUI(self):
-        print("[OutlineShaderNE] OpenCustomUI (%s)" % S.UI_JSON_DEF)
-        import OutlineShaderScript.OutlineShaderUIScreen as UI
+        print("[LSOutlineShaderNE] OpenCustomUI (%s)" % S.UI_JSON_DEF)
+        import LSOutlineShaderScript.LSOutlineShaderUIScreen as UI
         UI.HOST = self
         self.RegisterCustomUI()
-        print("[OutlineShaderNE] custom UI registered=%s" % self._ui_registered)
+        print("[LSOutlineShaderNE] custom UI registered=%s" % self._ui_registered)
 
         # Close the universal settings page first, otherwise it would still be
         # behind the custom overlay instead of the game.
@@ -365,9 +409,9 @@ class OutlineShaderNEClient(ClientSystem):
                 clientApi.GetLevelId()
             )
             result = window_comp.CloseSettingUI()
-            print("[OutlineShaderNE] CloseSettingUI -> %s" % (result,))
+            print("[LSOutlineShaderNE] CloseSettingUI -> %s" % (result,))
         except Exception as exc:
-            print("[OutlineShaderNE] CloseSettingUI failed: %s" % exc)
+            print("[LSOutlineShaderNE] CloseSettingUI failed: %s" % exc)
 
         # If the pause menu is still on the stack, close it so the game (not the
         # pause background) is what the custom overlay is drawn over.
@@ -378,12 +422,13 @@ class OutlineShaderNEClient(ClientSystem):
 
         try:
             clientApi.PushScreen(S.MOD_NAMESPACE, S.UI_KEY)
-            print("[OutlineShaderNE] PushScreen called")
+            print("[LSOutlineShaderNE] PushScreen called")
+            self._custom_ui_open = True
             self._push_retried = False
             self._pending_push_check = True
             self._push_check_tick = self._ticks
         except Exception as exc:
-            print("[OutlineShaderNE] PushScreen failed: %s" % exc)
+            print("[LSOutlineShaderNE] PushScreen failed: %s" % exc)
 
     # ---------------------------------------------------------------------- ui
     def RegisterSettings(self):
@@ -408,7 +453,7 @@ class OutlineShaderNEClient(ClientSystem):
                     S.MOD_NAMESPACE, S.api_text(S.MOD_DISPLAY_NAME), S.MOD_ICON
                 )
             except Exception as exc:
-                print("[OutlineShaderNE] RegisterSettingInst(%s) failed: %s" % (comp_id, exc))
+                print("[LSOutlineShaderNE] RegisterSettingInst(%s) failed: %s" % (comp_id, exc))
                 inst = None
             if inst:
                 break
@@ -416,7 +461,7 @@ class OutlineShaderNEClient(ClientSystem):
         if not inst:
             if not self._ui_logged:
                 self._ui_logged = True
-                print("[OutlineShaderNE] RegisterSettingInst returned None "
+                print("[LSOutlineShaderNE] RegisterSettingInst returned None "
                       "(settings page unavailable: check namespace/itemId)")
             return
 
@@ -433,9 +478,9 @@ class OutlineShaderNEClient(ClientSystem):
                            S.api_text(u"打开设置"), _on_open, 0)
             inst.AddText("entry_brand", S.api_text(u"LoongLy Software 2026"), 1)
         except Exception as exc:
-            print("[OutlineShaderNE] add entry controls failed: %s" % exc)
+            print("[LSOutlineShaderNE] add entry controls failed: %s" % exc)
 
-        print("[OutlineShaderNE] entry page registered")
+        print("[LSOutlineShaderNE] entry page registered")
 
     def _set_outline_mode(self, outside, enabled):
         """内侧/外侧 option toggles: exactly one of them is always selected."""

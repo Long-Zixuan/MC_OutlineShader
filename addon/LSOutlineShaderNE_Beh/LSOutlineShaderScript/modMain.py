@@ -8,7 +8,7 @@ so that every NetEase SDK build recognises the mod as a normal two-sided Mod.
 
 # Printed before any SDK import: if this line is missing from the log, the engine
 # never imported modMain.py, i.e. the behavior pack itself is not loaded.
-print("[OutlineShaderNE] modMain.py executing")
+print("[LSOutlineShaderNE] modMain.py executing")
 
 try:
     from mod.common.mod import Mod
@@ -20,15 +20,15 @@ try:
 except ImportError:  # very old SDK layout
     import client.extraClientApi as clientApi
 
-MOD_NAME = "OutlineShaderNE"
+MOD_NAME = "LSOutlineShaderNE"
 MOD_VERSION = "1.0.0"
-SCRIPT_ROOT = "OutlineShaderScript"
+SCRIPT_ROOT = "LSOutlineShaderScript"
 
-print("[OutlineShaderNE] modMain.py imported")
+print("[LSOutlineShaderNE] modMain.py imported")
 
 
 @Mod.Binding(name=MOD_NAME, version=MOD_VERSION)
-class OutlineShaderNEMod(object):
+class LSOutlineShaderNEMod(object):
 
     @Mod.InitServer()
     def init_server(self):
@@ -39,10 +39,10 @@ class OutlineShaderNEMod(object):
     def init_client(self):
         clientApi.RegisterSystem(
             MOD_NAME,
-            "OutlineShaderNEClient",
-            SCRIPT_ROOT + ".OutlineShaderNEClient.OutlineShaderNEClient"
+            "LSOutlineShaderNEClient",
+            SCRIPT_ROOT + ".LSOutlineShaderNEClient.LSOutlineShaderNEClient"
         )
-        print("[OutlineShaderNE] mod init (client)")
+        print("[LSOutlineShaderNE] mod init (client)")
 
     @Mod.DestroyServer()
     def destroy_server(self):

@@ -1,5 +1,5 @@
 {
-  "namespace": "outline_shader",
+  "namespace": "ls_outline_shader",
   "btn_base": {
     "type": "button",
     "$label_text": "",
@@ -41,7 +41,7 @@
         }
       }
     ],
-    "$btn_texture": "textures/outline_shader/button_bg"
+    "$btn_texture": "textures/ls_outline_shader/button_bg"
   },
   "main": {
     "type": "screen",
@@ -49,7 +49,7 @@
       {
         "right_bg": {
           "type": "image",
-          "texture": "textures/outline_shader/panel_bg",
+          "texture": "textures/ls_outline_shader/panel_bg",
           "alpha": 1.0,
           "anchor_from": "top_right",
           "anchor_to": "top_right",
@@ -131,7 +131,7 @@
                           }
                         },
                         {
-                          "toggle_MASTER@outline_shader.btn_base": {
+                          "toggle_MASTER@ls_outline_shader.btn_base": {
                             "size": [
                               "30%",
                               "100%"
@@ -195,7 +195,7 @@
                           }
                         },
                         {
-                          "dec_THRESHOLD@outline_shader.btn_base": {
+                          "dec_THRESHOLD@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -226,7 +226,7 @@
                           }
                         },
                         {
-                          "inc_THRESHOLD@outline_shader.btn_base": {
+                          "inc_THRESHOLD@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -269,7 +269,7 @@
                           }
                         },
                         {
-                          "dec_RIM_OFFECT@outline_shader.btn_base": {
+                          "dec_RIM_OFFECT@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -300,7 +300,7 @@
                           }
                         },
                         {
-                          "inc_RIM_OFFECT@outline_shader.btn_base": {
+                          "inc_RIM_OFFECT@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -343,7 +343,7 @@
                           }
                         },
                         {
-                          "dec_OUTLINE_COL@outline_shader.btn_base": {
+                          "dec_OUTLINE_COL@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -374,7 +374,7 @@
                           }
                         },
                         {
-                          "inc_OUTLINE_COL@outline_shader.btn_base": {
+                          "inc_OUTLINE_COL@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -417,7 +417,7 @@
                           }
                         },
                         {
-                          "mode_INSIDE@outline_shader.btn_base": {
+                          "mode_INSIDE@ls_outline_shader.btn_base": {
                             "size": [
                               "28%",
                               "100%"
@@ -427,7 +427,7 @@
                           }
                         },
                         {
-                          "mode_OUTSIDE@outline_shader.btn_base": {
+                          "mode_OUTSIDE@ls_outline_shader.btn_base": {
                             "size": [
                               "28%",
                               "100%"
@@ -470,7 +470,7 @@
                           }
                         },
                         {
-                          "toggle_LINEAR_DEPTH@outline_shader.btn_base": {
+                          "toggle_LINEAR_DEPTH@ls_outline_shader.btn_base": {
                             "size": [
                               "30%",
                               "100%"
@@ -534,7 +534,7 @@
                           }
                         },
                         {
-                          "toggle_CEL@outline_shader.btn_base": {
+                          "toggle_CEL@ls_outline_shader.btn_base": {
                             "size": [
                               "30%",
                               "100%"
@@ -577,7 +577,7 @@
                           }
                         },
                         {
-                          "toggle_PAPER_WORLD@outline_shader.btn_base": {
+                          "toggle_PAPER_WORLD@ls_outline_shader.btn_base": {
                             "size": [
                               "30%",
                               "100%"
@@ -620,7 +620,7 @@
                           }
                         },
                         {
-                          "dec_Shininess@outline_shader.btn_base": {
+                          "dec_Shininess@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -651,7 +651,7 @@
                           }
                         },
                         {
-                          "inc_Shininess@outline_shader.btn_base": {
+                          "inc_Shininess@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -715,7 +715,7 @@
                           }
                         },
                         {
-                          "toggle_ENABLE_SHADOWS@outline_shader.btn_base": {
+                          "toggle_ENABLE_SHADOWS@ls_outline_shader.btn_base": {
                             "size": [
                               "30%",
                               "100%"
@@ -758,7 +758,7 @@
                           }
                         },
                         {
-                          "toggle_SOFT_SHADOWS@outline_shader.btn_base": {
+                          "toggle_SOFT_SHADOWS@ls_outline_shader.btn_base": {
                             "size": [
                               "30%",
                               "100%"
@@ -801,7 +801,7 @@
                           }
                         },
                         {
-                          "dec_shadowMapResolution@outline_shader.btn_base": {
+                          "dec_shadowMapResolution@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -832,7 +832,7 @@
                           }
                         },
                         {
-                          "inc_shadowMapResolution@outline_shader.btn_base": {
+                          "inc_shadowMapResolution@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -875,7 +875,7 @@
                           }
                         },
                         {
-                          "dec_SHADOW_DISTANCE@outline_shader.btn_base": {
+                          "dec_SHADOW_DISTANCE@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -906,7 +906,7 @@
                           }
                         },
                         {
-                          "inc_SHADOW_DISTANCE@outline_shader.btn_base": {
+                          "inc_SHADOW_DISTANCE@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -949,7 +949,7 @@
                           }
                         },
                         {
-                          "dec_SHADOW_BRIGHTNESS@outline_shader.btn_base": {
+                          "dec_SHADOW_BRIGHTNESS@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -980,7 +980,7 @@
                           }
                         },
                         {
-                          "inc_SHADOW_BRIGHTNESS@outline_shader.btn_base": {
+                          "inc_SHADOW_BRIGHTNESS@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -1023,7 +1023,7 @@
                           }
                         },
                         {
-                          "dec_BLOCK_LIGHT_INTENSITY@outline_shader.btn_base": {
+                          "dec_BLOCK_LIGHT_INTENSITY@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -1054,7 +1054,7 @@
                           }
                         },
                         {
-                          "inc_BLOCK_LIGHT_INTENSITY@outline_shader.btn_base": {
+                          "inc_BLOCK_LIGHT_INTENSITY@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -1097,7 +1097,7 @@
                           }
                         },
                         {
-                          "dec_BLOCK_LIGHT_SHADOW_BOOST@outline_shader.btn_base": {
+                          "dec_BLOCK_LIGHT_SHADOW_BOOST@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -1128,7 +1128,7 @@
                           }
                         },
                         {
-                          "inc_BLOCK_LIGHT_SHADOW_BOOST@outline_shader.btn_base": {
+                          "inc_BLOCK_LIGHT_SHADOW_BOOST@ls_outline_shader.btn_base": {
                             "size": [
                               "10%",
                               "100%"
@@ -1144,7 +1144,7 @@
               }
             },
             {
-              "close@outline_shader.btn_base": {
+              "close@ls_outline_shader.btn_base": {
                 "size": [
                   "100%-16px",
                   30
@@ -1157,7 +1157,7 @@
                 ],
                 "$label_text": "关闭",
                 "$label_scale": 0.9,
-                "$btn_texture": "textures/outline_shader/close_bg",
+                "$btn_texture": "textures/ls_outline_shader/close_bg",
                 "layer": 10
               }
             }
@@ -1167,7 +1167,7 @@
       {
         "logo": {
           "type": "image",
-          "texture": "textures/outline_shader/logo",
+          "texture": "textures/ls_outline_shader/logo",
           "anchor_from": "bottom_left",
           "anchor_to": "bottom_left",
           "offset": [

@@ -36,20 +36,20 @@ def api_text(text):
             return text
     return text
 
-MOD_NAMESPACE = "OutlineShaderNE"
+MOD_NAMESPACE = "LSOutlineShaderNE"
 MOD_DISPLAY_NAME = u"描边光影"
-MOD_ICON = "textures/outline_shader/icon"
+MOD_ICON = "textures/ls_outline_shader/icon"
 
-CFG_NAME = "outline_shader_ne_settings_v1"
+CFG_NAME = "ls_outline_shader_ne_settings_v1"
 
 # Post-process effect names (also used by the Python PostProcess component)
-PROCESS_OUTLINE = "outline_shader_ne_outline"
-PROCESS_SHADOW = "outline_shader_ne_shadow"
+PROCESS_OUTLINE = "ls_outline_shader_ne_outline"
+PROCESS_SHADOW = "ls_outline_shader_ne_shadow"
 
-# Materials declared in addon/OutlineShaderNE_Res/materials/postprocess.material
-MATERIAL_OUTLINE = "outline_shader_ne_outline"
-MATERIAL_SHADOW = "outline_shader_ne_shadow"
-CEL_RAMP_TEXTURE = "textures/outline_shader/cel_ramp"
+# Materials declared in addon/LSOutlineShaderNE_Res/materials/postprocess.material
+MATERIAL_OUTLINE = "ls_outline_shader_ne_outline"
+MATERIAL_SHADOW = "ls_outline_shader_ne_shadow"
+CEL_RAMP_TEXTURE = "textures/ls_outline_shader/cel_ramp"
 
 # ---------------------------------------------------------------------------
 # Option lists - verbatim from the original pack
@@ -174,8 +174,9 @@ for _c in CONTROLS:
 # ---------------------------------------------------------------------------
 # Custom settings UI (JSON UI + ScreenNode)
 # ---------------------------------------------------------------------------
-UI_KEY = "outline_shader_settings"
-UI_JSON_DEF = "outline_shader.main"
+UI_KEY = "ls_outline_shader_settings"
+UI_NAMESPACE = "ls_outline_shader"
+UI_JSON_DEF = UI_NAMESPACE + ".main"
 
 # (kind, key) rows shown in the custom panel.  "header" is a section title,
 # "mode" is the 内侧/外侧 option pair.
@@ -287,7 +288,7 @@ def bool_value(value):
 # Values -> shader uniforms
 # ---------------------------------------------------------------------------
 def outline_params(values):
-    """EXTRA_VECTOR1..3 for outline_shader_ne.fragment."""
+    """EXTRA_VECTOR1..3 for ls_outline_shader_ne.fragment."""
     vector1 = [
         float(option_value(CONTROL_MAP["THRESHOLD"], values["THRESHOLD"])),
         float(option_value(CONTROL_MAP["RIM_OFFECT"], values["RIM_OFFECT"])),
@@ -312,7 +313,7 @@ def outline_params(values):
 
 
 def shadow_params(values):
-    """EXTRA_VECTOR1..2 for shadow_shader_ne.fragment."""
+    """EXTRA_VECTOR1..2 for ls_shadow_shader_ne.fragment."""
     vector1 = [
         1.0 if bool_value(values["ENABLE_SHADOWS"]) else 0.0,
         float(option_value(CONTROL_MAP["SHADOW_BRIGHTNESS"], values["SHADOW_BRIGHTNESS"])),

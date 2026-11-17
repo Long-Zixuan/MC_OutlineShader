@@ -1,4 +1,4 @@
-# Outline Shader NE（网易我的世界 · 基岩版组件）
+# LS Outline Shader NE（网易我的世界 · 基岩版组件）
 
 把原 OptiFine/Iris 光影包 **Outline Shader（LZX.Celluloid.Project）** 移植到
 **网易《我的世界》中国版**（基岩引擎 / ModSDK，Python 2 + GLSL 材质系统）。
@@ -10,14 +10,14 @@
   `gbufferProjectionInverse → inverse(PROJ)`、`far → FAR_CHUNKS_DISTANCE`、
   `#define → EXTRA_VECTOR`。
 - 原版 18 个可调参数全部接入；按需求把纹理描边 3 项从设置页隐藏（参数保留默认值），
-  其余 15 项 + 一个总开关通过 **Python 通用设置接口** 注册为游戏内设置页，
-  改动即时生效并持久化。
+  其余 15 项 + 一个总开关通过自定义 UI 调节，改动即时生效并持久化。
+- 设置入口保留在官方「暂停菜单 → 模组」通用设置页里，点「打开设置」后进入自定义面板；
+  面板支持滚动/比例布局，**Esc 或底部「关闭」按钮**都能退出。
 - 所有新增文件都在 **`ne_be/`** 下。
 
-> 说明：网易官方为 Python 模组提供的设置入口是「暂停菜单 → 模组 → 选中本模组」的
-> **通用设置页**（`RegisterSettingInst`），玩家可以在同一处管理所有模组的设置。
-> 本移植使用这个官方入口；若要把入口放到别的界面，需要改原生 JSON UI，那不是
-> 通用设置接口，且会随游戏版本失效，因此没有采用。
+> 包名、脚本根目录、UI 命名空间、材质/后处理名、贴图路径都加了 `LS` 前缀
+> （`LSOutlineShaderNE` / `LSOutlineShaderScript` / `ls_outline_shader`），
+> 避免和其他描边/光影组件撞名。
 
 ---
 
@@ -26,27 +26,27 @@
 ```
 ne_be/
 ├── addon/                                  # 直接把这一层导入 MC Studio（本地导入 → AddOn）
-│   ├── OutlineShaderNE_Beh/                # 行为包（逻辑）
+│   ├── LSOutlineShaderNE_Beh/                # 行为包（逻辑）
 │   │   ├── manifest.json
 │   │   ├── entities/
-│   │   └── OutlineShaderScript/
+│   │   └── LSOutlineShaderScript/
 │   │       ├── __init__.py
 │   │       ├── modMain.py                  # Mod 入口，注册客户端系统
-│   │       ├── OutlineShaderNEClient.py    # 设置页入口 + 后处理参数驱动
-│   │       ├── OutlineShaderUIScreen.py    # 自定义设置面板（ScreenNode）
+│   │       ├── LSOutlineShaderNEClient.py    # 设置页入口 + 后处理参数驱动
+│   │       ├── LSOutlineShaderUIScreen.py    # 自定义设置面板（ScreenNode）
 │   │       └── ShaderSettings.py           # 参数表 / 默认值 / 后处理描述
-│   └── OutlineShaderNE_Res/                # 资源包（GLSL + UI）
+│   └── LSOutlineShaderNE_Res/                # 资源包（GLSL + UI）
 │       ├── manifest.json
 │       ├── materials/
 │       │   ├── common.json                 # 声明加载本包的 postprocess.material
 │       │   └── postprocess.material        # 官方 17 个后处理材质 + 本模组 2 个
 │       ├── shaders/glsl/
-│       │   ├── outline_shader_ne.fragment  # 描边（原 final.fsh 的移植）
-│       │   └── shadow_shader_ne.fragment   # 阴影参数（屏幕空间近似）
+│       │   ├── ls_outline_shader_ne.fragment  # 描边（原 final.fsh 的移植）
+│       │   └── ls_shadow_shader_ne.fragment   # 阴影参数（屏幕空间近似）
 │       ├── ui/
 │       │   ├── _ui_defs.json               # UI 文件注册表
-│       │   └── outline_shader.json         # 自定义设置面板（按比例自适应）
-│       └── textures/outline_shader/
+│       │   └── ls_outline_shader.json         # 自定义设置面板（按比例自适应）
+│       └── textures/ls_outline_shader/
 │           ├── cel_ramp.png                # 原包 cel_ramp.png
 │           ├── icon.png                    # 模组/设置页图标
 │           ├── logo.png                    # 屏幕左下角 logo（屏幕宽 12%）
@@ -69,19 +69,19 @@ MC Studio 的 AddOn 导入单位是**一个包含行为包 + 资源包两个文�
 
 ```
 ne_be/addon/
-├── OutlineShaderNE_Beh/     # 行为包
-└── OutlineShaderNE_Res/     # 资源包
+├── LSOutlineShaderNE_Beh/     # 行为包
+└── LSOutlineShaderNE_Res/     # 资源包
 ```
 
 1. MC Studio → 作品库 → **基岩版组件** → 右上角 **「本地导入」** → 选
    **`ne_be/addon` 文件夹**。
 2. 导入后「更多 → 打开目录」，确认：
-   - `OutlineShaderNE_Beh/` 下有 `manifest.json`、`entities/`、`OutlineShaderScript/`
-   - `OutlineShaderNE_Res/` 下有 `manifest.json`、`materials/`、`shaders/`、`textures/`
+   - `LSOutlineShaderNE_Beh/` 下有 `manifest.json`、`entities/`、`LSOutlineShaderScript/`
+   - `LSOutlineShaderNE_Res/` 下有 `manifest.json`、`materials/`、`shaders/`、`textures/`
 3. 直接「开发测试」→ 新建测试存档。
 
 > 不要选 `ne_be` 根目录（里面还有 README/PORTING/tools），也不要单独选
-> `OutlineShaderNE_Beh` 或 `OutlineShaderNE_Res`；MC Studio 需要的是同时包含
+> `LSOutlineShaderNE_Beh` 或 `LSOutlineShaderNE_Res`；MC Studio 需要的是同时包含
 > 行为包和资源包的 `addon` 这一层。
 
 ### 方式 1：并入已有的 MC Studio 工程
@@ -89,17 +89,17 @@ ne_be/addon/
 1. MC Studio → 作品库 → 基岩版组件 → 新建「空白附加包」。
 2. 「更多 → 打开目录」，得到自动带后缀的
    `behavior_pack_xxx/`、`resource_pack_xxx/`。
-3. 把 `ne_be/addon/OutlineShaderNE_Beh/OutlineShaderScript/` 整个复制进
+3. 把 `ne_be/addon/LSOutlineShaderNE_Beh/LSOutlineShaderScript/` 整个复制进
    `behavior_pack_xxx/`。
 4. 确认 `behavior_pack_xxx/entities/` 存在（空目录即可）；没有就新建一个，
    这是网易识别“行为包”的标记。
-5. 把 `ne_be/addon/OutlineShaderNE_Res/materials/`、`shaders/`、`textures/`、
+5. 把 `ne_be/addon/LSOutlineShaderNE_Res/materials/`、`shaders/`、`textures/`、
    `ui/`、`pack_icon.png` 复制进 `resource_pack_xxx/`（有同名文件时覆盖）。
 6. `manifest.json` 建议保留 MC Studio 生成的那份；本项目包内的 manifest 也是
    `format_version: 1`，需要替换时保持 UUID/版本与工程一致即可。
 7. 启动开发测试。
 
-> `OutlineShaderScript` 这个脚本根目录名会参与通用设置页的归属判断，
+> `LSOutlineShaderScript` 这个脚本根目录名会参与通用设置页的归属判断，
 > 发布前请确认它不与其它模组重名。
 
 ### 发布时改一处
@@ -107,8 +107,8 @@ ne_be/addon/
 `RegisterSettingInst` 的第一个参数在正式服应传 **开平 ItemID**；开发环境的
 ModPC 用命名空间即可。位置：
 
-`OutlineShaderScript/ShaderSettings.py` → `MOD_NAMESPACE`
-（或直接在 `OutlineShaderNEClient.RegisterSettings()` 里替换）。
+`LSOutlineShaderScript/ShaderSettings.py` → `MOD_NAMESPACE`
+（或直接在 `LSOutlineShaderNEClient.RegisterSettings()` 里替换）。
 
 ---
 
@@ -123,7 +123,7 @@ ModPC 用命名空间即可。位置：
 - 行高按面板高度百分比排布，15 行参数在手机/PC 上都完整显示，不会被截断。
 - 每个数值项显示实际值，用 `-` / `+` 按档位调整，不再出现 `0..N` 的滑条档位号。
 - 描边模式是「内侧 / 外侧」两个按钮，选中的那个带 `●`。
-- 面板底部是整条深红「关闭」按钮，点一下回到游戏；屏幕左下角是 `LONGY SOFTWARE` logo（屏幕宽 12%、高 5%）。
+- 面板底部是整条深红「关闭」按钮，点一下回到游戏；**Esc 也可以退出**；屏幕左下角是 `LONGY SOFTWARE` logo（屏幕宽 12%、高 5%）。
 
 面板布局：
 
@@ -166,7 +166,7 @@ ModPC 用命名空间即可。位置：
 纹理描边相关项（`ENABLE_TEXTURE_OUTLINES`、`TEXTURE_OUTLINE_STRENGTH`、
 `OUTLINE_THICKNESS`）没有放进自定义面板，参数保持默认值（关闭 / 0.8 / 0.5）。
 需要显示时，在 `ShaderSettings.UI_ROWS` 里加回对应行，并同步
-`ui/outline_shader.json`（或重新生成 UI JSON）。
+`ui/ls_outline_shader.json`（或重新生成 UI JSON）。
 
 ### 3.3 风格化 Style
 
@@ -193,7 +193,7 @@ ModPC 用命名空间即可。位置：
 ### 3.5 左下角 logo
 
 logo 已移出设置面板，放在**屏幕左下角**（红圈位置）：
-`textures/outline_shader/logo.png`，宽度取屏幕的 12%、高 5%，手机和 PC 都会缩放，
+`textures/ls_outline_shader/logo.png`，宽度取屏幕的 12%、高 5%，手机和 PC 都会缩放，
 不会挡住面板里的选项。通用设置页/模组列表图标仍是 `icon.png`（256×256）。
 
 ---
@@ -233,7 +233,7 @@ logo 已移出设置面板，放在**屏幕左下角**（红圈位置）：
 原版阴影依赖 `shadowtex0/shadowtex1/shadowcolor0`、`shadowProjection`、
 PCF 采样，这些是 OptiFine/Iris 的延迟管线专有数据。网易基岩版（非渲染龙）
 的后处理只提供颜色、原始颜色、深度三张图，**没有阴影贴图、没有 lightmap、
-没有法线**。所以 `shadow_shader_ne.fragment` 用深度做屏幕空间遮蔽，把
+没有法线**。所以 `ls_shadow_shader_ne.fragment` 用深度做屏幕空间遮蔽，把
 `ENABLE_SHADOWS / SHADOW_BRIGHTNESS / SHADOW_DISTANCE / SOFT_SHADOWS /
 shadowMapResolution / BLOCK_LIGHT_* / Shininess` 全部接进去，保证每个滑块
 都有实际效果；它不冒充原版的 shadow map 算法。详见 `PORTING.md`。
@@ -286,8 +286,8 @@ python ne_be/tools/validate_port.py
 | 现象 | 先检查 |
 |---|---|
 | 暂停菜单 → 模组里没有本模组 | 脚本目录/`modMain.py`/各层 `__init__.py` 是否正确；日志里有没有 `client system ready`；正式服把 `MOD_NAMESPACE` 换成开平 ItemID |
-| 有「打开设置」按钮，但点了没反应 | 看日志 `open settings button clicked` / `RegisterUI` / `CloseSettingUI` / `PushScreen`；确认 `ui/_ui_defs.json` 和 `ui/outline_shader.json` 在资源包里 |
-| 自定义面板没出现 | 日志里有没有 `RegisterUI -> True`、`PushScreen called` 和 `custom UI created`；检查 `UI_JSON_DEF = "outline_shader.main"` 与 JSON 的 namespace/根节点是否一致 |
+| 有「打开设置」按钮，但点了没反应 | 看日志 `open settings button clicked` / `RegisterUI` / `CloseSettingUI` / `PushScreen`；确认 `ui/_ui_defs.json` 和 `ui/ls_outline_shader.json` 在资源包里 |
+| 自定义面板没出现 | 日志里有没有 `RegisterUI -> True`、`PushScreen called` 和 `custom UI created`；检查 `UI_JSON_DEF = "ls_outline_shader.main"` 与 JSON 的 namespace/根节点是否一致 |
 | 面板出现了，但背后还是暂停菜单 | `CloseSettingUI`/`PopTopUI` 没关掉原生界面；先按 Esc 回到游戏，再重开面板 |
 | 面板按钮没反应 | 日志里有没有 `UI control missing`；`ButtonPath` 是否传到回调；按钮是否是 `type: button` |
 | 面板文字空白 | Python 2 的 ModAPI 要 UTF-8 `str`；代码已用 `ShaderSettings.api_text()` 统一编码。新增按钮/文本后重启开发测试 |
@@ -299,12 +299,12 @@ python ne_be/tools/validate_port.py
 | 阴影/高光参数没反应 | 阴影 pass 只在「启用阴影」或「水面高光>0」时启用；且它是屏幕空间近似，不是原版 shadow map |
 | 改了设置重进游戏丢失 | 检查 `CreateConfigClient` 是否可用；日志里的 `GetConfigData/SetConfigData failed` |
 
-日志前缀统一为 `[OutlineShaderNE]`。
+日志前缀统一为 `[LSOutlineShaderNE]`。
 
 ### 8.1 “模组列表为空 + 没有描边”的排查顺序
 
 这两件事通常来自同一个原因：**行为包里的 Python 根本没跑起来**。描边不是资源包
-自己生效的，而是 `OutlineShaderNEClient` 调 `AddPostProcess` 加进去的。
+自己生效的，而是 `LSOutlineShaderNEClient` 调 `AddPostProcess` 加进去的。
 
 先按顺序确认：
 
@@ -314,10 +314,10 @@ python ne_be/tools/validate_port.py
    只激活资源包 = 有 GLSL 但没有 Python，所以没有描边；只激活行为包 = 没有资源包，
    `AddPostProcess` 找不到材质。
 3. **目录层级**：`manifest.json` 和 `entities/` 必须在**包文件夹的根目录**，
-   不能出现 `behavior_packs/OutlineShaderNE_Beh/ne_be/...` 这种多套一层。
+   不能出现 `behavior_packs/LSOutlineShaderNE_Beh/ne_be/...` 这种多套一层。
 4. **behavior_pack 下的 `entities/` 必须存在**（空目录也算），这是网易区分
    行为包/资源包的标记；没有它，行为包可能根本不被识别。
-5. **看日志**（MC Studio 的“脚本与测试工具”，过滤 `OutlineShaderNE`）：
+5. **看日志**（MC Studio 的“脚本与测试工具”，过滤 `LSOutlineShaderNE`）：
 
 | 日志停在哪 | 说明 |
 |---|---|
@@ -326,8 +326,8 @@ python ne_be/tools/validate_port.py
 | 有 `mod init (client)`，没有 `client system ready` | `RegisterSystem` 的类路径/文件/`__init__.py` 不对 |
 | 有 `client system ready`，没有 `settings page registered` | `RegisterSettingInst` 返回 None：命名空间/ItemID 或 UI 初始化时机问题 |
 | 有 `settings page registered`，没有 `AddPostProcess(outline) -> True` | 资源包未激活，或 `materials/postprocess.material` 没被加载/覆盖 |
-| `AddPostProcess(outline) -> False` | 材质名对不上或材质文件没进资源包；检查 `postprocess.material` 里有没有 `outline_shader_ne_outline` |
-| `AddPostProcess` 为 True 但仍无描边 | 检查是否 RenderDragon 客户端；确认 `outline_shader_ne.fragment` 在资源包 `shaders/glsl/` 下 |
+| `AddPostProcess(outline) -> False` | 材质名对不上或材质文件没进资源包；检查 `postprocess.material` 里有没有 `ls_outline_shader_ne_outline` |
+| `AddPostProcess` 为 True 但仍无描边 | 检查是否 RenderDragon 客户端；确认 `ls_outline_shader_ne.fragment` 在资源包 `shaders/glsl/` 下 |
 
 6. **MC Studio 报「至少一个资源或行为包加载失败」**：最常见是 `manifest.json` 用了
    `"format_version": 2`。中国版 MC Studio 目前只吃 **1**，2 是 1.16 模板格式，

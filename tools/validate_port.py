@@ -28,12 +28,12 @@ sys.dont_write_bytecode = True
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SCRIPT_DIR = os.path.join(ROOT, "addon", "OutlineShaderNE_Beh")
-RES_DIR = os.path.join(ROOT, "addon", "OutlineShaderNE_Res")
+SCRIPT_DIR = os.path.join(ROOT, "addon", "LSOutlineShaderNE_Beh")
+RES_DIR = os.path.join(ROOT, "addon", "LSOutlineShaderNE_Res")
 sys.path.insert(0, SCRIPT_DIR)
 
-FRAGMENT = os.path.join(RES_DIR, "shaders", "glsl", "outline_shader_ne.fragment")
-SHADOW_FRAGMENT = os.path.join(RES_DIR, "shaders", "glsl", "shadow_shader_ne.fragment")
+FRAGMENT = os.path.join(RES_DIR, "shaders", "glsl", "ls_outline_shader_ne.fragment")
+SHADOW_FRAGMENT = os.path.join(RES_DIR, "shaders", "glsl", "ls_shadow_shader_ne.fragment")
 MATERIAL = os.path.join(RES_DIR, "materials", "postprocess.material")
 
 FAILURES = []
@@ -219,8 +219,8 @@ sys.modules["mod.client.extraClientApi"] = client_api
 sys.modules["mod.common"] = common_pkg
 sys.modules["mod.common.mod"] = mod_mod
 
-from OutlineShaderScript import ShaderSettings as S  # noqa: E402
-from OutlineShaderScript import OutlineShaderNEClient as C  # noqa: E402
+from LSOutlineShaderScript import ShaderSettings as S  # noqa: E402
+from LSOutlineShaderScript import LSOutlineShaderNEClient as C  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -316,8 +316,13 @@ check(S.shadow_params(values) == (
 # 3. settings page + post-process wiring
 # ---------------------------------------------------------------------------
 print("3. settings page and post-process wiring")
-system = C.OutlineShaderNEClient("OutlineShaderNE", "OutlineShaderNEClient")
+system = C.LSOutlineShaderNEClient("LSOutlineShaderNE", "LSOutlineShaderNEClient")
 system.OnUiInitFinished({})
+
+# ESC closes the custom UI
+system._custom_ui_open = True
+system.OnKeyPressInGame({"key": "27", "isDown": True})
+check(system._custom_ui_open is False, "ESC closes the custom UI")
 
 inst = FACTORY.window.instances.get(S.MOD_NAMESPACE)
 check(inst is not None, "settings instance registered")
@@ -381,7 +386,7 @@ for _ in range(20):
     system.OnScriptTickClient({})
 saved = FACTORY.config.store
 check(len(saved) == 1, "settings written to the config component")
-reloaded = C.OutlineShaderNEClient("OutlineShaderNE", "OutlineShaderNEClient")
+reloaded = C.LSOutlineShaderNEClient("LSOutlineShaderNE", "LSOutlineShaderNEClient")
 check(reloaded._values["CEL"] is True and reloaded._values["PAPER_WORLD"] is True,
       "config values restored on a new client system")
 check(reloaded._values["OUTLINE_COL"] == 8, "slider index restored")
@@ -397,7 +402,7 @@ for values_dict in (S.default_values(), reloaded._values):
     json.dumps(shadow_desc)
     check(len(shadow_desc["paras"]) == 2, "shadow process has 2 vec4 params")
 
-cel_ramp = os.path.join(RES_DIR, "textures", "outline_shader", "cel_ramp.png")
+cel_ramp = os.path.join(RES_DIR, "textures", "ls_outline_shader", "cel_ramp.png")
 check(os.path.isfile(cel_ramp), "cel_ramp.png copied into the resource pack")
 check(os.path.isdir(os.path.join(SCRIPT_DIR, "entities")),
       "behavior pack contains the entities/ marker required by NetEase")
@@ -408,9 +413,9 @@ check(any(item.get("path") == "materials/postprocess.material" for item in commo
       "materials/common.json loads postprocess.material")
 check(S.MATERIAL_OUTLINE in material and S.MATERIAL_SHADOW in material,
       "both post-process materials exist in postprocess.material")
-check(material[S.MATERIAL_OUTLINE]["fragmentShader"].endswith("outline_shader_ne.fragment"),
+check(material[S.MATERIAL_OUTLINE]["fragmentShader"].endswith("ls_outline_shader_ne.fragment"),
       "outline material points at the ported shader")
-check(material[S.MATERIAL_SHADOW]["fragmentShader"].endswith("shadow_shader_ne.fragment"),
+check(material[S.MATERIAL_SHADOW]["fragmentShader"].endswith("ls_shadow_shader_ne.fragment"),
       "shadow material points at the shadow shader")
 
 # ---------------------------------------------------------------------------
@@ -418,12 +423,12 @@ check(material[S.MATERIAL_SHADOW]["fragmentShader"].endswith("shadow_shader_ne.f
 # ---------------------------------------------------------------------------
 print("5. custom UI JSON")
 ui_dir = os.path.join(RES_DIR, "ui")
-ui_file = os.path.join(ui_dir, "outline_shader.json")
-check(os.path.isfile(ui_file), "ui/outline_shader.json exists")
+ui_file = os.path.join(ui_dir, "ls_outline_shader.json")
+check(os.path.isfile(ui_file), "ui/ls_outline_shader.json exists")
 ui = json.load(io.open(ui_file, "r", encoding="utf-8"))
-check(ui.get("namespace") == "outline_shader", "UI namespace is outline_shader")
+check(ui.get("namespace") == "ls_outline_shader", "UI namespace is ls_outline_shader")
 check(ui.get("main", {}).get("type") == "screen", "UI main is a screen")
-check(S.UI_JSON_DEF == "outline_shader.main", "RegisterUI screen def is outline_shader.main")
+check(S.UI_JSON_DEF == "ls_outline_shader.main", "RegisterUI screen def is ls_outline_shader.main")
 
 panel = None
 for entry in ui["main"]["controls"]:
@@ -459,10 +464,10 @@ for name in ("close", "settings_rows", "logo",
 
 ui_defs = json.load(io.open(os.path.join(ui_dir, "_ui_defs.json"),
                             "r", encoding="utf-8"))
-check("ui/outline_shader.json" in ui_defs.get("ui_defs", []),
+check("ui/ls_outline_shader.json" in ui_defs.get("ui_defs", []),
       "_ui_defs.json loads the custom UI")
 check(ui.get("btn_base", {}).get("type") == "button", "UI button template exists")
-check(os.path.isfile(os.path.join(RES_DIR, "textures", "outline_shader", "logo.png")),
+check(os.path.isfile(os.path.join(RES_DIR, "textures", "ls_outline_shader", "logo.png")),
       "logo.png exists for the custom UI")
 
 check(len(S.UI_ROWS) >= 15, "UI_ROWS covers the parameters")

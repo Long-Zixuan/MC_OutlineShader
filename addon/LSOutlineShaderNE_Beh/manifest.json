@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "header": {
-    "name": "Outline Shader NE - Behavior",
+    "name": "LS Outline Shader NE - Behavior",
     "description": "NetEase Minecraft (China) port of the Outline Shader pack. Runtime settings + post-process driver.",
     "uuid": "a0ed0cb5-ee87-435c-bc24-71f03dd0de8c",
     "version": [1, 0, 0]

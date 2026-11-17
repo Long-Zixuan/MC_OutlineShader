@@ -6,20 +6,20 @@ A transparent overlay: a semi-transparent panel on the right, the game is
 visible on the left, every value is shown as text and changed with +/- buttons.
 Opened with PushScreen() from the "打开设置" button on the universal settings page.
 
-The UI JSON is resource_pack/ui/settings_ui.json (namespace outline_shader).
+The UI JSON is resource_pack/ui/settings_ui.json (namespace ls_outline_shader).
 """
 
 import mod.client.extraClientApi as clientApi
 
-from OutlineShaderScript import ShaderSettings as S
+from LSOutlineShaderScript import ShaderSettings as S
 
 ScreenNode = clientApi.GetScreenNodeCls()
 
-# Set by OutlineShaderNEClient before PushScreen().
+# Set by LSOutlineShaderNEClient before PushScreen().
 HOST = None
 
 
-class OutlineShaderUIScreen(ScreenNode):
+class LSOutlineShaderUIScreen(ScreenNode):
 
     def __init__(self, namespace, name, params):
         ScreenNode.__init__(self, namespace, name, params)
@@ -118,11 +118,11 @@ class OutlineShaderUIScreen(ScreenNode):
     def Create(self):
         self.BindButtons()
         self.Refresh()
-        print("[OutlineShaderNE] custom UI created")
+        print("[LSOutlineShaderNE] custom UI created")
 
     def BindButtons(self):
         content = self.GetContent()
-        print("[OutlineShaderNE] rows content: %s" % (content is not None))
+        print("[LSOutlineShaderNE] rows content: %s" % (content is not None))
         paths = ["/settings_panel/close"]
         for key in S.UI_NUMBER_KEYS:
             paths.append("/settings_panel/dec_" + key)
@@ -135,11 +135,11 @@ class OutlineShaderUIScreen(ScreenNode):
         for path in paths:
             control = self.GetControl(path)
             if control is None:
-                print("[OutlineShaderNE] UI control missing: %s" % path)
+                print("[LSOutlineShaderNE] UI control missing: %s" % path)
                 continue
             button = control.asButton()
             if button is None:
-                print("[OutlineShaderNE] UI control is not a button: %s" % path)
+                print("[LSOutlineShaderNE] UI control is not a button: %s" % path)
                 continue
             button.AddTouchEventParams({"isSwallow": True})
             button.SetButtonTouchUpCallback(self.OnButtonUp)
@@ -154,6 +154,9 @@ class OutlineShaderUIScreen(ScreenNode):
         name = str(path).replace("\\", "/").rstrip("/").split("/")[-1]
 
         if name == "close":
+            if HOST is not None:
+                HOST.CloseCustomUI()
+                return
             closed = False
             try:
                 closed = clientApi.PopTopUI()

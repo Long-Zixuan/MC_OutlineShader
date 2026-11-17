@@ -12,23 +12,23 @@
 
 | 原包文件 | 新文件 | 处理 |
 |---|---|---|
-| `shaders/final.fsh` | `addon/OutlineShaderNE_Res/shaders/glsl/outline_shader_ne.fragment` | 描边主算法逐行移植 |
+| `shaders/final.fsh` | `addon/LSOutlineShaderNE_Res/shaders/glsl/ls_outline_shader_ne.fragment` | 描边主算法逐行移植 |
 | `shaders/final.vsh` | 无 | 网易后处理使用内置 `shaders/uv_fullscreen.vertex`，不需要自定义顶点着色器 |
-| `shaders/commonSettings.glsl` | `addon/OutlineShaderNE_Beh/OutlineShaderScript/ShaderSettings.py` | `#define` 变成 Python 选项表 |
-| `shaders/shaders.properties` | 同上 + `OutlineShaderNEClient.RegisterSettings()` | `sliders` / `screen` 变成设置页控件 |
-| `shaders/gbuffers_textured.fsh` 的纹理描边段 | `outline_shader_ne.fragment` 的 `getTEXTURETextureOutline()` | 函数体保留，采样源改为屏幕颜色 |
-| `shaders/gbuffers_textured.fsh` 的 cel 段 | `outline_shader_ne.fragment` 的 `CEL` 分支 | 保留 `cel_ramp.png` + `alpha * 1.2`，改为亮度分级 |
-| `shaders/gbuffers_*.fsh` 的纸世界 | `outline_shader_ne.fragment` 的 `PAPER_WORLD` 分支 | `finalColor.rgb = vec3(1.0)` |
-| `shaders/gbuffers_textured.fsh` 的阴影段 | `addon/OutlineShaderNE_Res/shaders/glsl/shadow_shader_ne.fragment` | 引擎无 shadow map，改为深度屏幕空间近似（见 §4） |
-| `shaders/texture/cel_ramp.png` | `addon/OutlineShaderNE_Res/textures/outline_shader/cel_ramp.png` | 原文件原样复制 |
+| `shaders/commonSettings.glsl` | `addon/LSOutlineShaderNE_Beh/LSOutlineShaderScript/ShaderSettings.py` | `#define` 变成 Python 选项表 |
+| `shaders/shaders.properties` | 同上 + `LSOutlineShaderNEClient.RegisterSettings()` | `sliders` / `screen` 变成设置页控件 |
+| `shaders/gbuffers_textured.fsh` 的纹理描边段 | `ls_outline_shader_ne.fragment` 的 `getTEXTURETextureOutline()` | 函数体保留，采样源改为屏幕颜色 |
+| `shaders/gbuffers_textured.fsh` 的 cel 段 | `ls_outline_shader_ne.fragment` 的 `CEL` 分支 | 保留 `cel_ramp.png` + `alpha * 1.2`，改为亮度分级 |
+| `shaders/gbuffers_*.fsh` 的纸世界 | `ls_outline_shader_ne.fragment` 的 `PAPER_WORLD` 分支 | `finalColor.rgb = vec3(1.0)` |
+| `shaders/gbuffers_textured.fsh` 的阴影段 | `addon/LSOutlineShaderNE_Res/shaders/glsl/ls_shadow_shader_ne.fragment` | 引擎无 shadow map，改为深度屏幕空间近似（见 §4） |
+| `shaders/texture/cel_ramp.png` | `addon/LSOutlineShaderNE_Res/textures/ls_outline_shader/cel_ramp.png` | 原文件原样复制 |
 | `shaders/lang/*.lang` | 不需要 | 网易设置页的文案直接写在 `ShaderSettings.py` |
 | — | `materials/postprocess.material` | 新增 2 个后处理材质（其余 17 个为官方原样保留） |
-| — | `OutlineShaderNEClient.py` | 设置页 ↔ 后处理 uniform 的桥 |
+| — | `LSOutlineShaderNEClient.py` | 设置页 ↔ 后处理 uniform 的桥 |
 | — | `manifest.json` / `world_*_packs.json` | 网易基岩版附加包清单 |
 
 ---
 
-## 2. `final.fsh` → `outline_shader_ne.fragment`
+## 2. `final.fsh` → `ls_outline_shader_ne.fragment`
 
 ### 2.1 原样保留的代码
 
@@ -182,10 +182,10 @@ Style:
 
 自定义面板资源：
 
-- `resource_pack/ui/outline_shader.json`：`namespace: outline_shader`、
+- `resource_pack/ui/ls_outline_shader.json`：`namespace: ls_outline_shader`、
   `main` screen、右侧 `settings_panel`、按比例排布的 `settings_rows`；
 - `resource_pack/ui/_ui_defs.json`：注册 UI 文件；
-- `OutlineShaderUIScreen.py`：`ScreenNode`，绑定按钮、刷新数值、调用 ClientSystem。
+- `LSOutlineShaderUIScreen.py`：`ScreenNode`，绑定按钮、刷新数值、调用 ClientSystem。
 
 面板只使用 `label` / `button` / `image` / `panel` / `stack_panel`：
 
@@ -196,8 +196,8 @@ Style:
 | `[INSIDE OUTSIDE]` | 「内侧」「外侧」两个按钮，选中的带 `●` |
 | 分组标题 | `label` |
 | 手机/PC 适配 | 屏幕右侧全高黑底；面板宽 42%（最大 360），行高按面板高度百分比，15 行完整显示 |
-| 左下角 logo | `image`（屏幕左下角，`textures/outline_shader/logo.png`，屏幕宽 12%、高 5%） |
-| 关闭 | 面板底部整条深红 `关闭` 按钮（`PopTopUI`） |
+| 左下角 logo | `image`（屏幕左下角，`textures/ls_outline_shader/logo.png`，屏幕宽 12%、高 5%） |
+| 关闭 | 面板底部整条深红 `关闭` 按钮 / **Esc**（`PopTopUI`） |
 
 > `TextureOutline` 的 3 项没有放进 `UI_ROWS`，面板不显示；参数仍以默认值
 > （关闭 / 0.8 / 0.5）传给着色器。需要显示时在 `UI_ROWS` 加回并同步 UI JSON。
@@ -229,7 +229,7 @@ PCF_SAMPLE / PCF_BLUR_RADIUS / SHADOW_DISTORTION / FAR_DISTANCE_BIAS_*
 | `BLOCK_LIGHT_SHADOW_BOOST` | 遮蔽越强，亮像素额外乘得越多 | 对应“背光面方块光增强” |
 | `Shininess` | 亮部 `pow(luma, 16)` 加高光 | 没有水面法线，做“亮部高光”近似 |
 
-如果以后网易开放阴影贴图/延迟管线，只需把 `shadow_shader_ne.fragment` 的
+如果以后网易开放阴影贴图/延迟管线，只需把 `ls_shadow_shader_ne.fragment` 的
 遮蔽项替换回原 `sPCF` 代码；参数接口不用改。
 
 ---
@@ -238,14 +238,14 @@ PCF_SAMPLE / PCF_BLUR_RADIUS / SHADOW_DISTORTION / FAR_DISTANCE_BIAS_*
 
 | 目的 | 接口 | 代码位置 |
 |---|---|---|
-| 注册入口页 | `CreateNeteaseWindow(...).RegisterSettingInst(...)` | `OutlineShaderNEClient.RegisterSettings` |
+| 注册入口页 | `CreateNeteaseWindow(...).RegisterSettingInst(...)` | `LSOutlineShaderNEClient.RegisterSettings` |
 | 入口按钮 | `AddButton("open_settings", ..., _on_open)` | 同上 |
-| 注册自定义 UI | `RegisterUI(namespace, uiKey, clsPath, "outline_shader.main")` | `OutlineShaderNEClient.__init__` |
-| 打开/关闭面板 | `PushScreen(namespace, uiKey)` / `PopTopUI()` | `OpenCustomUI` / `OutlineShaderUIScreen` |
-| 控件绑定 | `GetBaseUIControl(path).asButton()` + `AddTouchEventParams` + `SetButtonTouchUpCallback` | `OutlineShaderUIScreen.BindButtons` |
+| 注册自定义 UI | `RegisterUI(namespace, uiKey, clsPath, "ls_outline_shader.main")` | `LSOutlineShaderNEClient.__init__` |
+| 打开/关闭面板 | `PushScreen(namespace, uiKey)` / `PopTopUI()` | `OpenCustomUI` / `LSOutlineShaderUIScreen` |
+| 控件绑定 | `GetBaseUIControl(path).asButton()` + `AddTouchEventParams` + `SetButtonTouchUpCallback` | `LSOutlineShaderUIScreen.BindButtons` |
 | 刷新文字 | `asLabel().SetText(...)`（用 `api_text` 转 UTF-8） | `SetLabel` / `SetButtonText` |
-| 加后处理 | `CreatePostProcess(...).AddPostProcess(dict, -1)` | `OutlineShaderNEClient._ensure_processes` |
-| 改参数 | `SetParameter(process, paramName, [vec4])` | `OutlineShaderNEClient.Apply` |
+| 加后处理 | `CreatePostProcess(...).AddPostProcess(dict, -1)` | `LSOutlineShaderNEClient._ensure_processes` |
+| 改参数 | `SetParameter(process, paramName, [vec4])` | `LSOutlineShaderNEClient.Apply` |
 | 开关后处理 | `SetEnableByName(process, bool)` | 同上 |
 | 持久化 | `CreateConfigClient(...).Get/SetConfigData(..., isGlobal=True)` | `_load_config` / `_save_config` |
 | 时机 | `UiInitFinished` 注册入口页；`OnScriptTickClient` 兜底重试/保存 | `OnUiInitFinished` / `OnScriptTickClient` |
@@ -253,14 +253,14 @@ PCF_SAMPLE / PCF_BLUR_RADIUS / SHADOW_DISTORTION / FAR_DISTANCE_BIAS_*
 参数打包（每个后处理最多 4 个 `EXTRA_VECTOR`，这里各用 2~3 个）：
 
 ```
-outline_shader_ne_outline:
+ls_outline_shader_ne_outline:
   EXTRA_VECTOR1 = (THRESHOLD, RIM_OFFECT, OUTLINE_COL, OUTLINE_MODE)
   EXTRA_VECTOR2 = (LINEAR_DEPTH, ENABLE_TEXTURE_OUTLINES,
                    TEXTURE_OUTLINE_STRENGTH, OUTLINE_THICKNESS)
   EXTRA_VECTOR3 = (CEL, PAPER_WORLD, 0, 0)
-  bindTexture[0] = textures/outline_shader/cel_ramp  -> TEXTURE_3
+  bindTexture[0] = textures/ls_outline_shader/cel_ramp  -> TEXTURE_3
 
-outline_shader_ne_shadow:
+ls_outline_shader_ne_shadow:
   EXTRA_VECTOR1 = (ENABLE_SHADOWS, SHADOW_BRIGHTNESS, SHADOW_DISTANCE, SOFT_SHADOWS)
   EXTRA_VECTOR2 = (shadowMapResolution, BLOCK_LIGHT_INTENSITY,
                    BLOCK_LIGHT_SHADOW_BOOST, Shininess)
@@ -278,9 +278,9 @@ outline_shader_ne_shadow:
 **原样复制了官方 17 个材质**，再追加：
 
 ```json
-"outline_shader_ne_outline": {
+"ls_outline_shader_ne_outline": {
     "vertexShader": "shaders/uv_fullscreen.vertex",
-    "fragmentShader": "shaders/outline_shader_ne.fragment",
+    "fragmentShader": "shaders/ls_outline_shader_ne.fragment",
     "vertexFields": [{"field": "Position"}, {"field": "UV0"}],
     "samplerStates": [ ... 0 Bilinear / 1 Bilinear / 2 Point / 3 Bilinear ... ],
     "states": ["DisableDepthTest"],
@@ -303,8 +303,8 @@ outline_shader_ne_shadow:
 |---|---|
 | `shaders/uv_fullscreen.vertex` | `shaders/glsl/uv_fullscreen.vertex` |
 | `shaders/tutorial/old_tv.fragment`（官方内置） | `shaders/tutorial/glsl/old_tv.fragment` |
-| `shaders/outline_shader_ne.fragment`（本项目） | `shaders/glsl/outline_shader_ne.fragment` |
-| `shaders/shadow_shader_ne.fragment`（本项目） | `shaders/glsl/shadow_shader_ne.fragment` |
+| `shaders/ls_outline_shader_ne.fragment`（本项目） | `shaders/glsl/ls_outline_shader_ne.fragment` |
+| `shaders/ls_shadow_shader_ne.fragment`（本项目） | `shaders/glsl/ls_shadow_shader_ne.fragment` |
 
 所以本项目把两个 `.fragment` 放在 `shaders/glsl/`，材质里写不带 `glsl/` 的路径，
 与官方 `postprocess.material` 的写法完全一致。**不要把 `.fragment` 直接放在
