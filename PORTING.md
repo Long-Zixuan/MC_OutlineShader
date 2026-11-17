@@ -176,8 +176,9 @@ Style:
 
 > 按需求，`TextureOutline` 的 3 项在设置页标记为 `"hidden": True`，不再显示；
 > 参数仍以默认值（关闭 / 0.8 / 0.5）传给着色器。需要恢复时去掉 `hidden` 即可。
-> 所有离散选项（含原下拉框 `OUTLINE_MODE`、`shadowMapResolution`、
-> `SHADOW_DISTANCE`）都改用整数滑条，避免部分 SDK 的下拉框选中文字空白；
+> 描边模式用「内侧 / 外侧」两个互斥开关组成选项板（始终选中一个）；
+> 其余离散选项（`shadowMapResolution`、`SHADOW_DISTANCE` 等）用整数滑条，
+> 避免部分 SDK 的下拉框选中文字空白。
 > 设置页只保留中文参数名，不再显示档位说明文字，档位值见 README 的参数表。
 
 控件类型映射：
@@ -186,7 +187,7 @@ Style:
 |---|---|---|
 | `[OFF ON]` 开关 | `AddToggle` | 例如 `CEL`、`PAPER_WORLD` |
 | 固定档位滑条（如 `[0.0 0.25 0.5 0.75 1.0]`） | `AddSlider(step=len-1)` | 存的是**档位下标**，Python 再映射回原值 |
-| `[INSIDE OUTSIDE]` 多选 | `AddSlider(step=1)` | 0=INSIDE，1=OUTSIDE |
+| `[INSIDE OUTSIDE]` 多选 | `AddToggle` ×2 | 内侧/外侧互斥，始终选中一个 |
 | `const int shadowMapResolution = 1024` | `AddSlider(step=4)` | 0=512 … 4=8192 |
 | `SHADOW_DISTANCE` 16 档 | `AddSlider(step=15)` | 0=AUTO，1=64 … 15=512 |
 

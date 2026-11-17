@@ -101,8 +101,16 @@ CONTROLS = [
     {"kind": "slider", "key": "OUTLINE_COL", "label": u"描边颜色",
      "options": OUTLINE_COL_OPTIONS, "default": 2},
 
-    {"kind": "slider", "key": "OUTLINE_MODE", "label": u"描边模式",
-     "options": OUTLINE_MODE_OPTIONS, "default": 0},
+    {"kind": "slider", "key": "OUTLINE_MODE", "hidden": True,
+     "label": u"描边模式", "options": OUTLINE_MODE_OPTIONS, "default": 0},
+
+    {"kind": "text", "key": "sec_mode", "label": u"描边模式"},
+
+    {"kind": "toggle", "key": "OUTLINE_MODE_INSIDE", "label": u"内侧",
+     "default": True},
+
+    {"kind": "toggle", "key": "OUTLINE_MODE_OUTSIDE", "label": u"外侧",
+     "default": False},
 
     {"kind": "toggle", "key": "LINEAR_DEPTH", "label": u"线性深度",
      "default": False},

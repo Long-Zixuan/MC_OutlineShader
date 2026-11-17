@@ -142,9 +142,11 @@ class OutlineShaderNEClient(ClientSystem):
             spec = S.CONTROL_MAP.get(key)
             if spec is None:
                 continue
-            if spec.get("hidden"):
+            if spec.get("hidden") and key != "OUTLINE_MODE":
                 # Hidden options are fixed at their defaults; do not restore an
                 # old saved value (e.g. texture outlines from a previous build).
+                # OUTLINE_MODE is hidden from the UI but still the real value
+                # behind the 内侧/外侧 option toggles, so it is restored.
                 continue
             if spec["kind"] == "toggle":
                 self._values[key] = S.bool_value(value)
@@ -155,6 +157,18 @@ class OutlineShaderNEClient(ClientSystem):
                     pass
             elif spec["kind"] == "dropdown":
                 self._values[key] = S.dropdown_index(spec, value)
+
+        self._sync_outline_toggles()
+
+    def _sync_outline_toggles(self):
+        try:
+            mode = int(self._values.get("OUTLINE_MODE", 0))
+        except (TypeError, ValueError):
+            mode = 0
+        mode = 1 if mode == 1 else 0
+        self._values["OUTLINE_MODE"] = mode
+        self._values["OUTLINE_MODE_INSIDE"] = (mode == 0)
+        self._values["OUTLINE_MODE_OUTSIDE"] = (mode == 1)
 
     def _save_config(self):
         comp = self._get_config_comp()
@@ -347,9 +361,41 @@ class OutlineShaderNEClient(ClientSystem):
 
         print("[OutlineShaderNE] settings page registered (%d controls)" % ui_priority)
 
+    def _set_outline_mode(self, outside, enabled):
+        """内侧/外侧 option toggles: exactly one of them is always selected."""
+        if not S.bool_value(enabled):
+            # Re-select the active option instead of allowing "none".
+            if self._setting_inst is not None:
+                try:
+                    self._setting_inst.SetToggleValue(
+                        "OUTLINE_MODE_OUTSIDE" if outside else "OUTLINE_MODE_INSIDE",
+                        True
+                    )
+                except Exception:
+                    pass
+            return
+
+        self._values["OUTLINE_MODE"] = 1 if outside else 0
+        self._values["OUTLINE_MODE_INSIDE"] = not outside
+        self._values["OUTLINE_MODE_OUTSIDE"] = outside
+
+        if self._setting_inst is not None:
+            try:
+                self._setting_inst.SetToggleValue("OUTLINE_MODE_INSIDE", not outside)
+                self._setting_inst.SetToggleValue("OUTLINE_MODE_OUTSIDE", outside)
+            except Exception:
+                pass
+
+        self._dirty = True
+        self.Apply()
+
     def OnControlChanged(self, key, value):
         spec = S.CONTROL_MAP.get(key)
         if spec is None or spec["kind"] == "text" or spec.get("hidden"):
+            return
+
+        if key in ("OUTLINE_MODE_INSIDE", "OUTLINE_MODE_OUTSIDE"):
+            self._set_outline_mode(key == "OUTLINE_MODE_OUTSIDE", value)
             return
 
         if spec["kind"] == "toggle":

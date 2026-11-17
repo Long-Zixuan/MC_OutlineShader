@@ -108,9 +108,11 @@ class FakePostComp(object):
 class FakeSettingInst(object):
     def __init__(self):
         self.controls = []
+        self.values = {}
 
     def Clear(self):
         self.controls = []
+        self.values = {}
         return self
 
     def AddText(self, key, name, priority=None):
@@ -127,6 +129,10 @@ class FakeSettingInst(object):
 
     def AddDropDown(self, key, name, options, callback, priority=None, default=None):
         self.controls.append(("dropdown", key, name, priority, default, callback, list(options)))
+        return self
+
+    def SetToggleValue(self, key, value):
+        self.values[key] = bool(value)
         return self
 
 
@@ -329,9 +335,12 @@ system.OnControlChanged("OUTLINE_COL", 8)
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][2] == 0.9,
       "OUTLINE_COL slider reaches the shader")
 
-system.OnControlChanged("OUTLINE_MODE", 1)
+system.OnControlChanged("OUTLINE_MODE_OUTSIDE", True)
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][3] == -1.0,
-      "OUTLINE_MODE OUTSIDE reaches the shader")
+      "OUTLINE_MODE_OUTSIDE option reaches the shader")
+system.OnControlChanged("OUTLINE_MODE_INSIDE", True)
+check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][3] == 1.0,
+      "OUTLINE_MODE_INSIDE option reaches the shader")
 
 system.OnControlChanged("ENABLE_TEXTURE_OUTLINES", True)  # hidden: ignored
 system.OnControlChanged("OUTLINE_THICKNESS", 4)            # hidden: ignored
