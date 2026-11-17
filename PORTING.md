@@ -174,25 +174,35 @@ Style:
   Shininess
 ```
 
-> 按需求，`TextureOutline` 的 3 项在设置页标记为 `"hidden": True`，不再显示；
-> 参数仍以默认值（关闭 / 0.8 / 0.5）传给着色器。需要恢复时去掉 `hidden` 即可。
-> 描边模式用「内侧 / 外侧」两个互斥开关组成选项板（始终选中一个）；
-> 其余离散选项（`shadowMapResolution`、`SHADOW_DISTANCE` 等）用整数滑条，
-> 避免部分 SDK 的下拉框选中文字空白。
-> 设置页只保留中文参数名，不再显示档位说明文字，档位值见 README 的参数表。
+入口页（官方通用设置）只放一个「打开设置」按钮。点击后：
 
-控件类型映射：
+1. `CloseSettingUI()` 关掉通用设置页；
+2. `PopTopUI()` 关掉暂停菜单（让背后是游戏画面）；
+3. `PushScreen(namespace, uiKey)` 打开自定义界面（`RegisterUI` 在 `UiInitFinished` 注册）。
 
-| 原版 | 网易控件 | 说明 |
-|---|---|---|
-| `[OFF ON]` 开关 | `AddToggle` | 例如 `CEL`、`PAPER_WORLD` |
-| 固定档位滑条（如 `[0.0 0.25 0.5 0.75 1.0]`） | `AddSlider(step=len-1)` | 存的是**档位下标**，Python 再映射回原值 |
-| `[INSIDE OUTSIDE]` 多选 | `AddToggle` ×2 | 内侧/外侧互斥，始终选中一个 |
-| `const int shadowMapResolution = 1024` | `AddSlider(step=4)` | 0=512 … 4=8192 |
-| `SHADOW_DISTANCE` 16 档 | `AddSlider(step=15)` | 0=AUTO，1=64 … 15=512 |
+自定义面板资源：
 
-所有档位表都在 `ShaderSettings.py`，与 `commonSettings.glsl` / `final.fsh`
-的注释候选值一一对应；`validate_port.py` 会逐项比对。
+- `resource_pack/ui/outline_shader.json`：`namespace: outline_shader`、
+  `main` screen、右侧 `settings_panel`、按比例排布的 `settings_rows`；
+- `resource_pack/ui/_ui_defs.json`：注册 UI 文件；
+- `OutlineShaderUIScreen.py`：`ScreenNode`，绑定按钮、刷新数值、调用 ClientSystem。
+
+面板只使用 `label` / `button` / `image` / `panel` / `stack_panel`：
+
+| 原版 | 网易实现 |
+|---|---|
+| `[OFF ON]` | 一个「开/关」按钮，Python 切换并刷新文字 |
+| 固定档位滑条 | 实际值标签 + `-` / `+` 按钮，按 `options` 下标步进 |
+| `[INSIDE OUTSIDE]` | 「内侧」「外侧」两个按钮，选中的带 `●` |
+| 分组标题 | `label` |
+| 手机/PC 适配 | 屏幕右侧全高黑底；面板宽 42%（最大 360），行高按面板高度百分比，15 行完整显示 |
+| 左下角 logo | `image`（屏幕左下角，`textures/outline_shader/logo.png`，屏幕宽 12%、高 5%） |
+| 关闭 | 面板底部整条深红 `关闭` 按钮（`PopTopUI`） |
+
+> `TextureOutline` 的 3 项没有放进 `UI_ROWS`，面板不显示；参数仍以默认值
+> （关闭 / 0.8 / 0.5）传给着色器。需要显示时在 `UI_ROWS` 加回并同步 UI JSON。
+> 所有档位表都在 `ShaderSettings.py`，与 `commonSettings.glsl` / `final.fsh`
+> 的注释候选值一一对应；`validate_port.py` 会逐项比对。
 
 ---
 
@@ -228,14 +238,17 @@ PCF_SAMPLE / PCF_BLUR_RADIUS / SHADOW_DISTORTION / FAR_DISTANCE_BIAS_*
 
 | 目的 | 接口 | 代码位置 |
 |---|---|---|
-| 注册设置页 | `CreateNeteaseWindow(...).RegisterSettingInst(...)` | `OutlineShaderNEClient.RegisterSettings` |
-| 开关/滑条/下拉 | `AddToggle` / `AddSlider` / `AddDropDown` | 同上 |
-| 控件顺序 | `priority` 参数（按 `CONTROLS` 下标） | `ShaderSettings.CONTROLS` |
+| 注册入口页 | `CreateNeteaseWindow(...).RegisterSettingInst(...)` | `OutlineShaderNEClient.RegisterSettings` |
+| 入口按钮 | `AddButton("open_settings", ..., _on_open)` | 同上 |
+| 注册自定义 UI | `RegisterUI(namespace, uiKey, clsPath, "outline_shader.main")` | `OutlineShaderNEClient.__init__` |
+| 打开/关闭面板 | `PushScreen(namespace, uiKey)` / `PopTopUI()` | `OpenCustomUI` / `OutlineShaderUIScreen` |
+| 控件绑定 | `GetBaseUIControl(path).asButton()` + `AddTouchEventParams` + `SetButtonTouchUpCallback` | `OutlineShaderUIScreen.BindButtons` |
+| 刷新文字 | `asLabel().SetText(...)`（用 `api_text` 转 UTF-8） | `SetLabel` / `SetButtonText` |
 | 加后处理 | `CreatePostProcess(...).AddPostProcess(dict, -1)` | `OutlineShaderNEClient._ensure_processes` |
 | 改参数 | `SetParameter(process, paramName, [vec4])` | `OutlineShaderNEClient.Apply` |
 | 开关后处理 | `SetEnableByName(process, bool)` | 同上 |
 | 持久化 | `CreateConfigClient(...).Get/SetConfigData(..., isGlobal=True)` | `_load_config` / `_save_config` |
-| 时机 | `UiInitFinished` 注册；`OnScriptTickClient` 兜底重试 | `OnUiInitFinished` / `OnScriptTickClient` |
+| 时机 | `UiInitFinished` 注册入口页；`OnScriptTickClient` 兜底重试/保存 | `OnUiInitFinished` / `OnScriptTickClient` |
 
 参数打包（每个后处理最多 4 个 `EXTRA_VECTOR`，这里各用 2~3 个）：
 

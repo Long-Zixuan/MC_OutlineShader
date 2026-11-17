@@ -32,9 +32,10 @@ ne_be/
 │   │   └── OutlineShaderScript/
 │   │       ├── __init__.py
 │   │       ├── modMain.py                  # Mod 入口，注册客户端系统
-│   │       ├── OutlineShaderNEClient.py    # 设置页 + 后处理参数驱动
+│   │       ├── OutlineShaderNEClient.py    # 设置页入口 + 后处理参数驱动
+│   │       ├── OutlineShaderUIScreen.py    # 自定义设置面板（ScreenNode）
 │   │       └── ShaderSettings.py           # 参数表 / 默认值 / 后处理描述
-│   └── OutlineShaderNE_Res/                # 资源包（GLSL）
+│   └── OutlineShaderNE_Res/                # 资源包（GLSL + UI）
 │       ├── manifest.json
 │       ├── materials/
 │       │   ├── common.json                 # 声明加载本包的 postprocess.material
@@ -42,9 +43,16 @@ ne_be/
 │       ├── shaders/glsl/
 │       │   ├── outline_shader_ne.fragment  # 描边（原 final.fsh 的移植）
 │       │   └── shadow_shader_ne.fragment   # 阴影参数（屏幕空间近似）
+│       ├── ui/
+│       │   ├── _ui_defs.json               # UI 文件注册表
+│       │   └── outline_shader.json         # 自定义设置面板（按比例自适应）
 │       └── textures/outline_shader/
 │           ├── cel_ramp.png                # 原包 cel_ramp.png
-│           └── icon.png                    # 设置页图标（LONGY SOFTWARE）
+│           ├── icon.png                    # 模组/设置页图标
+│           ├── logo.png                    # 屏幕左下角 logo（屏幕宽 12%）
+│           ├── panel_bg.png                # 面板深色半透明底
+│           ├── button_bg.png               # 按钮半透明底
+│           └── close_bg.png                # 底部「关闭」按钮深红底
 ├── tools/validate_port.py                  # 离线自测（不需要开游戏）
 ├── README.md
 └── PORTING.md                              # 逐文件 / 逐行移植对照
@@ -86,7 +94,7 @@ ne_be/addon/
 4. 确认 `behavior_pack_xxx/entities/` 存在（空目录即可）；没有就新建一个，
    这是网易识别“行为包”的标记。
 5. 把 `ne_be/addon/OutlineShaderNE_Res/materials/`、`shaders/`、`textures/`、
-   `pack_icon.png` 复制进 `resource_pack_xxx/`（有同名文件时覆盖）。
+   `ui/`、`pack_icon.png` 复制进 `resource_pack_xxx/`（有同名文件时覆盖）。
 6. `manifest.json` 建议保留 MC Studio 生成的那份；本项目包内的 manifest 也是
    `format_version: 1`，需要替换时保持 UUID/版本与工程一致即可。
 7. 启动开发测试。
@@ -104,14 +112,44 @@ ModPC 用命名空间即可。位置：
 
 ---
 
-## 3. 设置入口与参数
+## 3. 设置入口与自定义面板
 
-进入游戏后：**暂停菜单 → 模组 → 描边光影**。
-页面可滚动，所有控件改动后立刻写入后处理，无需重进世界。
+进入游戏后：**暂停菜单 → 模组 → 描边光影 → 打开设置**。
+通用设置页会关闭，弹出右侧半透明的自定义面板：
 
-> 描边模式是「内侧 / 外侧」两个开关组成的选项板；其余离散选项用整数滑条，
-> 页面显示 `0..N` 的档位号，具体档位值见下面表格。
-> 界面不再放档位说明和英文参数名，保持简洁。
+- 左侧直接看到游戏画面，参数改动立即写入后处理。
+- 屏幕右侧整条上下都是半透明黑底，参数面板叠在上面，不会出现黑底和文字错位。
+- 右侧面板按屏幕宽度 42% 自适应（最大 360），手机和 PC 都会缩放。
+- 行高按面板高度百分比排布，15 行参数在手机/PC 上都完整显示，不会被截断。
+- 每个数值项显示实际值，用 `-` / `+` 按档位调整，不再出现 `0..N` 的滑条档位号。
+- 描边模式是「内侧 / 外侧」两个按钮，选中的那个带 `●`。
+- 面板底部是整条深红「关闭」按钮，点一下回到游戏；屏幕左下角是 `LONGY SOFTWARE` logo（屏幕宽 12%、高 5%）。
+
+面板布局：
+
+```
+×  描边光影
+启用描边光影              [关]
+描边
+  描边阈值      -  0.0001  +
+  描边偏移      -  0.001   +
+  描边颜色      -  0.3     +
+  描边模式      [● 内侧] [外侧]
+  线性深度                [关]
+风格
+  卡通渲染                [关]
+  纸世界                  [关]
+  水面高光      -  0.0     +
+阴影
+  启用阴影                [关]
+  软阴影                  [开]
+  阴影分辨率    -  1024    +
+  阴影距离      -  自动    +
+  阴影亮度      -  0.6     +
+  方块光强度    -  0.8     +
+  方块光增强    -  1.25    +
+[ LONGY SOFTWARE ]
+```
 
 ### 3.1 描边 Outline
 
@@ -120,14 +158,15 @@ ModPC 用命名空间即可。位置：
 | 描边阈值 | `THRESHOLD` | `0.0001` | 0.00001 / 0.0001 / 0.0002 / 0.001 / 0.002 / 0.01 | 深度差超过该值才画线 |
 | 描边偏移 | `RIM_OFFECT` | `0.001` | 0.0001 … 0.01（9 档） | 采样偏移，默认约 2 像素 |
 | 描边颜色 | `OUTLINE_COL` | `0.3` | 0.1 … 0.9（9 档） | 原版为灰度乘数，越小越黑 |
-| 描边模式 | `OUTLINE_MODE` | `内侧` | 内侧 / 外侧（两个开关） | 内/外描边 |
+| 描边模式 | `OUTLINE_MODE` | `内侧` | 内侧 / 外侧（两个按钮） | 内/外描边 |
 | 线性深度 | `LINEAR_DEPTH` | `OFF` | OFF / ON | 用线性深度代替原始深度 |
 
 ### 3.2 纹理描边 Texture Outline（已隐藏）
 
-纹理描边相关控件（`ENABLE_TEXTURE_OUTLINES`、`TEXTURE_OUTLINE_STRENGTH`、
-`OUTLINE_THICKNESS`）已从设置页隐藏，参数保持默认值（关闭 / 0.8 / 0.5）。
-需要重新显示时，在 `ShaderSettings.CONTROLS` 里去掉这几项的 `"hidden": True` 即可。
+纹理描边相关项（`ENABLE_TEXTURE_OUTLINES`、`TEXTURE_OUTLINE_STRENGTH`、
+`OUTLINE_THICKNESS`）没有放进自定义面板，参数保持默认值（关闭 / 0.8 / 0.5）。
+需要显示时，在 `ShaderSettings.UI_ROWS` 里加回对应行，并同步
+`ui/outline_shader.json`（或重新生成 UI JSON）。
 
 ### 3.3 风格化 Style
 
@@ -151,17 +190,11 @@ ModPC 用命名空间即可。位置：
 
 外加一个 **总开关**（`MASTER`），用于快速对比开关光影；原包没有这一项。
 
-### 3.5 底部品牌
+### 3.5 左下角 logo
 
-网易通用设置接口**不支持在页面里插入图片**（官方 FAQ 明确说明“没有图片功能”）。
-所以：
-
-- 你提供的 logo 被做成设置页/模组列表的图标
-  `OutlineShaderNE_Res/textures/outline_shader/icon.png`（256×256，白底圆角）。
-- 设置页最底部只保留一行 `LONGY SOFTWARE`，尺寸由平台统一控制，不会过大。
-
-如果必须把**图片**放在页面底部，只能改成自定义 UI 页面（JSON UI + ScreenNode），
-那会丢掉“暂停菜单 → 模组”这个官方通用设置入口；需要的话可以再做一版。
+logo 已移出设置面板，放在**屏幕左下角**（红圈位置）：
+`textures/outline_shader/logo.png`，宽度取屏幕的 12%、高 5%，手机和 PC 都会缩放，
+不会挡住面板里的选项。通用设置页/模组列表图标仍是 `icon.png`（256×256）。
 
 ---
 
@@ -244,22 +277,26 @@ shadowMapResolution / BLOCK_LIGHT_* / Shininess` 全部接进去，保证每个�
 python ne_be/tools/validate_port.py
 ```
 
-会检查：原版描边代码是否逐行保留、18 个参数选项表、默认值、设置页控件
-数量、滑块/开关回调是否写入 `EXTRA_VECTOR`、配置持久化、两个后处理
-描述是否可 JSON 序列化、材质与贴图是否齐全。
+会检查：原版描边代码是否逐行保留、18 个参数选项表、默认值、入口按钮、
+自定义 UI JSON 的命名空间/面板/控件路径、`_ui_defs.json`、logo 贴图、
+后处理描述是否可 JSON 序列化、材质与贴图是否齐全。
 
 ## 8. 排错
 
 | 现象 | 先检查 |
 |---|---|
 | 暂停菜单 → 模组里没有本模组 | 脚本目录/`modMain.py`/各层 `__init__.py` 是否正确；日志里有没有 `client system ready`；正式服把 `MOD_NAMESPACE` 换成开平 ItemID |
-| 有设置页，但画面完全没变化 | 资源包是否启用；日志里有没有 `AddPostProcess ... failed` / `post-process not ready`；是否运行在**渲染龙**客户端（本项目只支持非渲染龙的 GLSL 材质管线） |
-| 描边位置/宽度不对 | 先调 `RIM_OFFECT`；`TEXTURE_DIMENSIONS` 异常时着色器会用 UV 导数回退，若仍不对请把设备分辨率/渲染缩放反馈给开发者 |
-| 描边出现在物体内侧/外侧相反 | 切换 `OUTLINE_MODE`（INSIDE ↔ OUTSIDE）；不同设备的深度方向可能不同 |
-| 开 `LINEAR_DEPTH` 后描边异常 | 网易的投影矩阵约定与 OptiFine 不完全相同，建议保持默认 `OFF` |
-| CEL 打开后发黑 | 说明 `TEXTURE_3`（cel_ramp）没绑上；着色器已内置 85/128/170 的程序化 ramp 回退，正常不会全黑；若仍异常，检查 `bindTexture` 是否被当前 SDK 支持 |
-| 阴影/高光参数没反应 | 阴影 pass 只在 `ENABLE_SHADOWS=ON` 或 `Shininess>0` 时启用；且它本来就是屏幕空间近似，不是原版 shadow map |
-| 设置页/模组列表有控件但文字空白 | Python 2 的 ModAPI 要 UTF-8 `str`，不能直接传 `unicode`；代码已用 `ShaderSettings.api_text()` 统一编码。改完要重启开发测试，热更新不一定重新加载新函数 |
+| 有「打开设置」按钮，但点了没反应 | 看日志 `open settings button clicked` / `RegisterUI` / `CloseSettingUI` / `PushScreen`；确认 `ui/_ui_defs.json` 和 `ui/outline_shader.json` 在资源包里 |
+| 自定义面板没出现 | 日志里有没有 `RegisterUI -> True`、`PushScreen called` 和 `custom UI created`；检查 `UI_JSON_DEF = "outline_shader.main"` 与 JSON 的 namespace/根节点是否一致 |
+| 面板出现了，但背后还是暂停菜单 | `CloseSettingUI`/`PopTopUI` 没关掉原生界面；先按 Esc 回到游戏，再重开面板 |
+| 面板按钮没反应 | 日志里有没有 `UI control missing`；`ButtonPath` 是否传到回调；按钮是否是 `type: button` |
+| 面板文字空白 | Python 2 的 ModAPI 要 UTF-8 `str`；代码已用 `ShaderSettings.api_text()` 统一编码。新增按钮/文本后重启开发测试 |
+| 有面板，但画面完全没变化 | 资源包是否启用；日志里有没有 `AddPostProcess ... failed` / `post-process not ready`；是否运行在**渲染龙**客户端（本项目只支持非渲染龙的 GLSL 材质管线） |
+| 描边位置/宽度不对 | 先调 `描边偏移`；`TEXTURE_DIMENSIONS` 异常时着色器会用 UV 导数回退 |
+| 描边出现在物体内侧/外侧相反 | 在面板里切换「内侧 / 外侧」 |
+| 开「线性深度」后描边异常 | 网易的投影矩阵约定与 OptiFine 不完全相同，建议保持关闭 |
+| CEL 打开后发黑 | `TEXTURE_3`（cel_ramp）没绑上；着色器已内置 85/128/170 的程序化 ramp 回退 |
+| 阴影/高光参数没反应 | 阴影 pass 只在「启用阴影」或「水面高光>0」时启用；且它是屏幕空间近似，不是原版 shadow map |
 | 改了设置重进游戏丢失 | 检查 `CreateConfigClient` 是否可用；日志里的 `GetConfigData/SetConfigData failed` |
 
 日志前缀统一为 `[OutlineShaderNE]`。

@@ -131,6 +131,10 @@ class FakeSettingInst(object):
         self.controls.append(("dropdown", key, name, priority, default, callback, list(options)))
         return self
 
+    def AddButton(self, key, name, button_text, callback, priority=None):
+        self.controls.append(("button", key, name, priority, button_text, callback))
+        return self
+
     def SetToggleValue(self, key, value):
         self.values[key] = bool(value)
         return self
@@ -170,6 +174,13 @@ client_api.GetEngineNamespace = lambda: "minecraft"
 client_api.GetEngineSystemName = lambda: "engine"
 client_api.GetLevelId = lambda: "level"
 client_api.GetEngineCompFactory = lambda: FACTORY
+client_api.RegisterUI = lambda *args: True
+client_api.GetUI = lambda *args: None
+client_api.CreateUI = lambda *args: None
+client_api.PushScreen = lambda *args: True
+client_api.PopTopUI = lambda *args: True
+client_api.GetTopUI = lambda *args: ""
+client_api.GetScreenNodeCls = lambda: object
 
 mod_mod = types.ModuleType("mod.common.mod")
 
@@ -310,9 +321,10 @@ system.OnUiInitFinished({})
 
 inst = FACTORY.window.instances.get(S.MOD_NAMESPACE)
 check(inst is not None, "settings instance registered")
-visible_controls = [c for c in S.CONTROLS if not c.get("hidden")]
-check(len(inst.controls) == len(visible_controls),
-      "all %d visible controls added (got %d)" % (len(visible_controls), len(inst.controls)))
+check(len(inst.controls) == 2,
+      "entry page has exactly button + brand (got %d)" % len(inst.controls))
+check(any(c[0] == "button" and c[1] == "open_settings" for c in inst.controls),
+      "entry page has the 打开设置 button")
 
 post = FACTORY.post
 check(post.order == [S.PROCESS_SHADOW, S.PROCESS_OUTLINE],
@@ -330,33 +342,31 @@ check(post.params[(S.PROCESS_SHADOW, "p_shadow_a")] == [0.0, 0.6, -1.0, 1.0],
 check(post.params[(S.PROCESS_SHADOW, "p_shadow_b")] == [1024.0, 0.8, 1.25, 0.0],
       "block-light params written")
 
-# simulate callbacks
-system.OnControlChanged("OUTLINE_COL", 8)
+# custom UI host actions
+system.set_ui_value("OUTLINE_COL", 8)
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][2] == 0.9,
-      "OUTLINE_COL slider reaches the shader")
+      "custom UI value reaches the shader")
 
-system.OnControlChanged("OUTLINE_MODE_OUTSIDE", True)
+system.set_ui_mode(True)
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][3] == -1.0,
-      "OUTLINE_MODE_OUTSIDE option reaches the shader")
-system.OnControlChanged("OUTLINE_MODE_INSIDE", True)
+      "custom UI 外侧 reaches the shader")
+system.set_ui_mode(False)
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_a")][3] == 1.0,
-      "OUTLINE_MODE_INSIDE option reaches the shader")
+      "custom UI 内侧 reaches the shader")
 
-system.OnControlChanged("ENABLE_TEXTURE_OUTLINES", True)  # hidden: ignored
-system.OnControlChanged("OUTLINE_THICKNESS", 4)            # hidden: ignored
 check(post.params[(S.PROCESS_OUTLINE, "p_outline_b")] == [0.0, 0.0, 0.8, 0.5],
-      "hidden texture-outline controls stay at their defaults")
+      "hidden texture-outline stays at its defaults")
 
-system.OnControlChanged("ENABLE_SHADOWS", True)
-check(post.enabled[S.PROCESS_SHADOW] is True, "shadow pass enabled by toggle")
-system.OnControlChanged("SHADOW_BRIGHTNESS", 20)
+system.set_ui_value("ENABLE_SHADOWS", True)
+check(post.enabled[S.PROCESS_SHADOW] is True, "shadow pass enabled by custom UI")
+system.set_ui_value("SHADOW_BRIGHTNESS", 20)
 check(post.params[(S.PROCESS_SHADOW, "p_shadow_a")][1] == 1.0,
       "SHADOW_BRIGHTNESS reaches the shader")
-system.OnControlChanged("shadowMapResolution", 4)
+system.set_ui_value("shadowMapResolution", 4)
 check(post.params[(S.PROCESS_SHADOW, "p_shadow_b")][0] == 8192.0,
-      "shadowMapResolution slider reaches the shader")
+      "shadowMapResolution reaches the shader")
 
-system.OnControlChanged("MASTER", False)
+system.set_ui_value("MASTER", False)
 check(post.enabled[S.PROCESS_OUTLINE] is False and post.enabled[S.PROCESS_SHADOW] is False,
       "master switch disables both passes")
 
@@ -364,9 +374,9 @@ check(post.enabled[S.PROCESS_OUTLINE] is False and post.enabled[S.PROCESS_SHADOW
 # 4. persistence
 # ---------------------------------------------------------------------------
 print("4. persistence and process descriptions")
-system.OnControlChanged("MASTER", True)
-system.OnControlChanged("CEL", True)
-system.OnControlChanged("PAPER_WORLD", True)
+system.set_ui_value("MASTER", True)
+system.set_ui_value("CEL", True)
+system.set_ui_value("PAPER_WORLD", True)
 for _ in range(20):
     system.OnScriptTickClient({})
 saved = FACTORY.config.store
@@ -402,6 +412,63 @@ check(material[S.MATERIAL_OUTLINE]["fragmentShader"].endswith("outline_shader_ne
       "outline material points at the ported shader")
 check(material[S.MATERIAL_SHADOW]["fragmentShader"].endswith("shadow_shader_ne.fragment"),
       "shadow material points at the shadow shader")
+
+# ---------------------------------------------------------------------------
+# 5. custom UI JSON
+# ---------------------------------------------------------------------------
+print("5. custom UI JSON")
+ui_dir = os.path.join(RES_DIR, "ui")
+ui_file = os.path.join(ui_dir, "outline_shader.json")
+check(os.path.isfile(ui_file), "ui/outline_shader.json exists")
+ui = json.load(io.open(ui_file, "r", encoding="utf-8"))
+check(ui.get("namespace") == "outline_shader", "UI namespace is outline_shader")
+check(ui.get("main", {}).get("type") == "screen", "UI main is a screen")
+check(S.UI_JSON_DEF == "outline_shader.main", "RegisterUI screen def is outline_shader.main")
+
+panel = None
+for entry in ui["main"]["controls"]:
+    if "settings_panel" in entry:
+        panel = entry["settings_panel"]
+        break
+check(panel is not None, "settings_panel exists")
+check(panel.get("type") == "panel", "settings_panel is a panel")
+
+
+def _control_names(controls):
+    names = []
+    for entry in controls:
+        for name, body in entry.items():
+            names.append(name.split("@")[0])
+            if isinstance(body, dict):
+                names.extend(_control_names(body.get("controls", [])))
+    return names
+
+
+names = _control_names(panel.get("controls", []))
+names += _control_names(ui.get("main", {}).get("controls", []))
+rows = panel.get("controls", [])
+rows_controls = []
+for entry in rows:
+    if "settings_rows" in entry:
+        rows_controls = entry["settings_rows"].get("controls", [])
+names += _control_names(rows_controls)
+for name in ("close", "settings_rows", "logo",
+             "toggle_MASTER", "dec_THRESHOLD", "inc_THRESHOLD",
+             "val_THRESHOLD", "mode_INSIDE", "mode_OUTSIDE"):
+    check(name in names, "UI control exists: " + name)
+
+ui_defs = json.load(io.open(os.path.join(ui_dir, "_ui_defs.json"),
+                            "r", encoding="utf-8"))
+check("ui/outline_shader.json" in ui_defs.get("ui_defs", []),
+      "_ui_defs.json loads the custom UI")
+check(ui.get("btn_base", {}).get("type") == "button", "UI button template exists")
+check(os.path.isfile(os.path.join(RES_DIR, "textures", "outline_shader", "logo.png")),
+      "logo.png exists for the custom UI")
+
+check(len(S.UI_ROWS) >= 15, "UI_ROWS covers the parameters")
+check(S.format_value("THRESHOLD", 0.0001) == "0.0001", "format_value small float")
+check(S.format_value("SHADOW_DISTANCE", -1.0) == u"自动", "format_value AUTO")
+check(S.format_value("shadowMapResolution", 1024) == "1024", "format_value resolution")
 
 print("")
 if FAILURES:

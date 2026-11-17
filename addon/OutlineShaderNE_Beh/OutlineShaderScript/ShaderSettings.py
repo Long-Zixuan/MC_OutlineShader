@@ -171,6 +171,58 @@ CONTROL_MAP = {}
 for _c in CONTROLS:
     CONTROL_MAP[_c["key"]] = _c
 
+# ---------------------------------------------------------------------------
+# Custom settings UI (JSON UI + ScreenNode)
+# ---------------------------------------------------------------------------
+UI_KEY = "outline_shader_settings"
+UI_JSON_DEF = "outline_shader.main"
+
+# (kind, key) rows shown in the custom panel.  "header" is a section title,
+# "mode" is the 内侧/外侧 option pair.
+UI_ROWS = [
+    ("toggle", "MASTER"),
+    ("header", u"描边"),
+    ("number", "THRESHOLD"),
+    ("number", "RIM_OFFECT"),
+    ("number", "OUTLINE_COL"),
+    ("mode", "OUTLINE_MODE"),
+    ("toggle", "LINEAR_DEPTH"),
+    ("header", u"风格"),
+    ("toggle", "CEL"),
+    ("toggle", "PAPER_WORLD"),
+    ("number", "Shininess"),
+    ("header", u"阴影"),
+    ("toggle", "ENABLE_SHADOWS"),
+    ("toggle", "SOFT_SHADOWS"),
+    ("number", "shadowMapResolution"),
+    ("number", "SHADOW_DISTANCE"),
+    ("number", "SHADOW_BRIGHTNESS"),
+    ("number", "BLOCK_LIGHT_INTENSITY"),
+    ("number", "BLOCK_LIGHT_SHADOW_BOOST"),
+]
+
+UI_NUMBER_KEYS = [key for kind, key in UI_ROWS if kind == "number"]
+UI_TOGGLE_KEYS = [key for kind, key in UI_ROWS if kind == "toggle"]
+
+
+def format_value(key, value):
+    """Human-readable value for the custom UI labels."""
+    if key == "shadowMapResolution":
+        return str(int(value))
+    if key == "SHADOW_DISTANCE":
+        return u"自动" if value < 0 else str(int(value))
+    if key in ("SHADOW_BRIGHTNESS", "BLOCK_LIGHT_INTENSITY",
+               "BLOCK_LIGHT_SHADOW_BOOST", "Shininess"):
+        text = "%.2f" % value
+        return text.rstrip("0").rstrip(".")
+    if key == "OUTLINE_COL":
+        return ("%.1f" % value).rstrip("0").rstrip(".")
+    if abs(value) < 1.0:
+        text = "%.5f" % value
+        return text.rstrip("0").rstrip(".")
+    return ("%.2f" % value).rstrip("0").rstrip(".")
+
+
 
 def default_values():
     values = {}

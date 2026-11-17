@@ -44,6 +44,16 @@ def _on_control(*args):
         print("[OutlineShaderNE] settings callback error: %s" % exc)
 
 
+def _on_open(*args):
+    print("[OutlineShaderNE] open settings button clicked")
+    if _ACTIVE is None:
+        return
+    try:
+        _ACTIVE.OpenCustomUI()
+    except Exception as exc:
+        print("[OutlineShaderNE] open custom UI failed: %s" % exc)
+
+
 class OutlineShaderNEClient(ClientSystem):
 
     def __init__(self, namespace, systemName):
@@ -66,6 +76,10 @@ class OutlineShaderNEClient(ClientSystem):
         self._post_logged = False
         self._add_logged = set()
         self._params_logged = False
+        self._ui_registered = False
+        self._pending_push_check = False
+        self._push_check_tick = 0
+        self._push_retried = False
 
         self._load_config()
 
@@ -86,9 +100,28 @@ class OutlineShaderNEClient(ClientSystem):
         print("[OutlineShaderNE] client system ready")
 
     # ------------------------------------------------------------------ events
+    def RegisterCustomUI(self):
+        if self._ui_registered:
+            return
+        try:
+            ok = clientApi.RegisterUI(
+                S.MOD_NAMESPACE,
+                S.UI_KEY,
+                "OutlineShaderScript.OutlineShaderUIScreen.OutlineShaderUIScreen",
+                S.UI_JSON_DEF
+            )
+            print("[OutlineShaderNE] RegisterUI -> %s" % (ok,))
+            if ok is False or ok == 0:
+                print("[OutlineShaderNE] RegisterUI returned failure")
+            else:
+                self._ui_registered = True
+        except Exception as exc:
+            print("[OutlineShaderNE] RegisterUI failed: %s" % exc)
+
     def OnUiInitFinished(self, args):
         # The config component can be unavailable during __init__; try again now.
         self._load_config()
+        self.RegisterCustomUI()
         self._ui_ready = False
         self.RegisterSettings()
         self.Apply()
@@ -96,9 +129,32 @@ class OutlineShaderNEClient(ClientSystem):
     def OnScriptTickClient(self, args):
         self._ticks += 1
 
+        # Verify that PushScreen actually put our screen on top; retry once,
+        # then fall back to CreateUI (some SDK builds reject PushScreen here).
+        if self._pending_push_check and self._ticks - self._push_check_tick >= 5:
+            self._pending_push_check = False
+            try:
+                top = str(clientApi.GetTopUI())
+                print("[OutlineShaderNE] top UI after open: %s" % top)
+                if "outline_shader" not in top and not top.endswith("main"):
+                    if not self._push_retried:
+                        self._push_retried = True
+                        clientApi.PushScreen(S.MOD_NAMESPACE, S.UI_KEY)
+                        print("[OutlineShaderNE] PushScreen retried")
+                        self._pending_push_check = True
+                        self._push_check_tick = self._ticks
+                    else:
+                        ui = clientApi.CreateUI(S.MOD_NAMESPACE, S.UI_KEY,
+                                                {"isHud": 1})
+                        print("[OutlineShaderNE] CreateUI fallback -> %s"
+                              % (ui is not None))
+            except Exception as exc:
+                print("[OutlineShaderNE] GetTopUI failed: %s" % exc)
+
         # UiInitFinished can be missed on some builds; retry gently.
         if not self._ui_ready and self._ticks % 20 == 0 and self._ui_tries < 60:
             self._ui_tries += 1
+            self.RegisterCustomUI()
             self.RegisterSettings()
 
         # AddPostProcess may fail while the world is still loading; retry.
@@ -279,6 +335,56 @@ class OutlineShaderNEClient(ClientSystem):
         except Exception as exc:
             print("[OutlineShaderNE] SetEnableByName failed: %s" % exc)
 
+    # ------------------------------------------------------------- custom ui
+    def get_ui_values(self):
+        return self._values
+
+    def set_ui_value(self, key, value):
+        self._values[key] = value
+        self._dirty = True
+        self.Apply()
+
+    def set_ui_mode(self, outside):
+        self._values["OUTLINE_MODE"] = 1 if outside else 0
+        self._values["OUTLINE_MODE_INSIDE"] = not outside
+        self._values["OUTLINE_MODE_OUTSIDE"] = outside
+        self._dirty = True
+        self.Apply()
+
+    def OpenCustomUI(self):
+        print("[OutlineShaderNE] OpenCustomUI (%s)" % S.UI_JSON_DEF)
+        import OutlineShaderScript.OutlineShaderUIScreen as UI
+        UI.HOST = self
+        self.RegisterCustomUI()
+        print("[OutlineShaderNE] custom UI registered=%s" % self._ui_registered)
+
+        # Close the universal settings page first, otherwise it would still be
+        # behind the custom overlay instead of the game.
+        try:
+            window_comp = clientApi.GetEngineCompFactory().CreateNeteaseWindow(
+                clientApi.GetLevelId()
+            )
+            result = window_comp.CloseSettingUI()
+            print("[OutlineShaderNE] CloseSettingUI -> %s" % (result,))
+        except Exception as exc:
+            print("[OutlineShaderNE] CloseSettingUI failed: %s" % exc)
+
+        # If the pause menu is still on the stack, close it so the game (not the
+        # pause background) is what the custom overlay is drawn over.
+        try:
+            clientApi.PopTopUI()
+        except Exception:
+            pass
+
+        try:
+            clientApi.PushScreen(S.MOD_NAMESPACE, S.UI_KEY)
+            print("[OutlineShaderNE] PushScreen called")
+            self._push_retried = False
+            self._pending_push_check = True
+            self._push_check_tick = self._ticks
+        except Exception as exc:
+            print("[OutlineShaderNE] PushScreen failed: %s" % exc)
+
     # ---------------------------------------------------------------------- ui
     def RegisterSettings(self):
         factory = clientApi.GetEngineCompFactory()
@@ -322,44 +428,14 @@ class OutlineShaderNEClient(ClientSystem):
         except Exception:
             pass
 
-        ui_priority = 0
-        for spec in S.CONTROLS:
-            if spec.get("hidden"):
-                continue
-            key = spec["key"]
-            label = S.api_text(spec["label"])
-            kind = spec["kind"]
-            try:
-                if kind == "text":
-                    inst.AddText(key, label, ui_priority)
-                elif kind == "toggle":
-                    default = S.bool_value(self._values.get(key, spec["default"]))
-                    inst.AddToggle(key, label, _on_control, ui_priority, default)
-                elif kind == "slider":
-                    options = spec["options"]
-                    step = max(1, len(options) - 1)
-                    default = int(self._values.get(key, spec["default"]))
-                    if default < 0:
-                        default = 0
-                    if default > step:
-                        default = step
-                    inst.AddSlider(key, label, step, _on_control, ui_priority, default)
-                elif kind == "dropdown":
-                    labels = [S.api_text(item) for item in spec["labels"]]
-                    default = int(self._values.get(key, spec["default"]))
-                    if default < 0:
-                        default = 0
-                    if default >= len(labels):
-                        default = len(labels) - 1
-                    inst.AddDropDown(key, label, labels, _on_control, ui_priority,
-                                     labels[default])
-                else:
-                    print("[OutlineShaderNE] unknown control kind: %s" % kind)
-            except Exception as exc:
-                print("[OutlineShaderNE] Add control %s failed: %s" % (key, exc))
-            ui_priority += 1
+        try:
+            inst.AddButton("open_settings", S.api_text(u"----"),
+                           S.api_text(u"打开设置"), _on_open, 0)
+            inst.AddText("entry_brand", S.api_text(u"LoongLy Software 2026"), 1)
+        except Exception as exc:
+            print("[OutlineShaderNE] add entry controls failed: %s" % exc)
 
-        print("[OutlineShaderNE] settings page registered (%d controls)" % ui_priority)
+        print("[OutlineShaderNE] entry page registered")
 
     def _set_outline_mode(self, outside, enabled):
         """内侧/外侧 option toggles: exactly one of them is always selected."""
