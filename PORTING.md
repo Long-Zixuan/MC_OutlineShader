@@ -177,8 +177,8 @@ Style:
 > 按需求，`TextureOutline` 的 3 项在设置页标记为 `"hidden": True`，不再显示；
 > 参数仍以默认值（关闭 / 0.8 / 0.5）传给着色器。需要恢复时去掉 `hidden` 即可。
 > 所有离散选项（含原下拉框 `OUTLINE_MODE`、`shadowMapResolution`、
-> `SHADOW_DISTANCE`）都改用整数滑条 + 档位说明，避免部分 SDK 的下拉框
-> 选中文字空白。
+> `SHADOW_DISTANCE`）都改用整数滑条，避免部分 SDK 的下拉框选中文字空白；
+> 设置页只保留中文参数名，不再显示档位说明文字，档位值见 README 的参数表。
 
 控件类型映射：
 
