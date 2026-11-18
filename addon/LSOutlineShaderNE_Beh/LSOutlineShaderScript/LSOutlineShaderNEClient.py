@@ -145,6 +145,7 @@ class LSOutlineShaderNEClient(ClientSystem):
 
     def DimensionChangeFinishClientEvent(self, args):
         print("[LSOutlineShaderNE] dimension change finished")
+        self.CloseCustomUI()
 
     def OnKeyPressInGame(self, args):
         if str(args.get("key", "")) != "27" or not args.get("isDown"): #key 27 是 ESC
@@ -157,22 +158,25 @@ class LSOutlineShaderNEClient(ClientSystem):
     def CloseCustomUI(self):
         self._save_config()
         self._custom_ui_open = False
-        try:
-            ui = clientApi.GetUI(S.MOD_NAMESPACE, S.UI_KEY)
-            if ui is not None:
-                ui.SetRemove()
-                return
-        except Exception as exc:
-            print("[LSOutlineShaderNE] GetUI close failed: %s" % exc)
 
         try:
             top = str(clientApi.GetTopUI())
             print("[LSOutlineShaderNE] close top UI: %s" % top)
             if S.UI_NAMESPACE in top:
+                print("[LSOutlineShaderNE] pop custom UI")
                 clientApi.PopTopUI()
                 return
         except Exception as exc:
             print("[LSOutlineShaderNE] GetTopUI close failed: %s" % exc)
+
+        try:
+            ui = clientApi.GetUI(S.MOD_NAMESPACE, S.UI_KEY)
+            if ui is not None:
+                print("[LSOutlineShaderNE] remove custom UI")
+                ui.SetRemove()
+                return
+        except Exception as exc:
+            print("[LSOutlineShaderNE] GetUI close failed: %s" % exc)
 
         # PushScreen may report the screen without its namespace; the flag is
         # only set after PushScreen, so popping is safe here.
