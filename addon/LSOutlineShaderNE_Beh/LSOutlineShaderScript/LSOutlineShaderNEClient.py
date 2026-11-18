@@ -158,17 +158,7 @@ class LSOutlineShaderNEClient(ClientSystem):
     def CloseCustomUI(self):
         self._save_config()
         self._custom_ui_open = False
-
-        try:
-            top = str(clientApi.GetTopUI())
-            print("[LSOutlineShaderNE] close top UI: %s" % top)
-            if S.UI_NAMESPACE in top:
-                print("[LSOutlineShaderNE] pop custom UI")
-                clientApi.PopTopUI()
-                return
-        except Exception as exc:
-            print("[LSOutlineShaderNE] GetTopUI close failed: %s" % exc)
-
+        
         try:
             ui = clientApi.GetUI(S.MOD_NAMESPACE, S.UI_KEY)
             if ui is not None:
@@ -177,6 +167,16 @@ class LSOutlineShaderNEClient(ClientSystem):
                 return
         except Exception as exc:
             print("[LSOutlineShaderNE] GetUI close failed: %s" % exc)
+
+        try:
+            top = str(clientApi.GetTopUI())
+            print("[LSOutlineShaderNE] top UI: %s" % top)
+            if S.UI_NAMESPACE in top:
+                print("[LSOutlineShaderNE] pop custom UI")
+                clientApi.PopTopUI()
+                return
+        except Exception as exc:
+            print("[LSOutlineShaderNE] GetTopUI close failed: %s" % exc)
 
         # PushScreen may report the screen without its namespace; the flag is
         # only set after PushScreen, so popping is safe here.
