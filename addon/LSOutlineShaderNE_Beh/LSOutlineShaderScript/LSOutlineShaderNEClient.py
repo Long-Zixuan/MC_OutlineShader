@@ -145,7 +145,7 @@ class LSOutlineShaderNEClient(ClientSystem):
 
     def DimensionChangeFinishClientEvent(self, args):
         print("[LSOutlineShaderNE] dimension change finished")
-        self.CloseCustomUI()
+        self.CloseCustomUI() #这里是解决跨纬度打不开UI的bug的核心，看来在比特萝卜上班的经验还是很有用的哈
 
     def OnKeyPressInGame(self, args):
         if str(args.get("key", "")) != "27" or not args.get("isDown"): #key 27 是 ESC

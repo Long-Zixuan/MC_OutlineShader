@@ -356,5 +356,4 @@ python ne_be/tools/validate_port.py
 ---
 
 ## 9. TODO
-1.BUG：切换维度后无法打开设置UI
-2.阴影效果改善
+1.阴影效果改善
