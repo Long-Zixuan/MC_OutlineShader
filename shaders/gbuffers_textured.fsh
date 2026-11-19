@@ -244,6 +244,24 @@ void main()
     // Apply vertex color (biome tinting)
     col.rgb *= color.rgb;
 
+#if ENABLE_SHADOWS == 1
+    // `oldLighting=true` (shaders.properties) also leaves vanilla's per-face brightness
+    // in gl_Color. That property is pack-global: it is read once when the pack loads and
+    // OptiFine/Iris parse it before the option macros, so no option and no #if can turn
+    // it off for a single branch. The shadow path below lights the surface itself, so the
+    // baked vanilla factor would be applied a second time (up 1.0, down 0.5, sides
+    // 0.8 / 0.6) and darken/flatten every face by that amount. Dividing it back out is
+    // the per-fragment equivalent of oldLighting=false for this branch; AO and the biome
+    // tint are part of gl_Color in both modes and stay.
+    // Terrain only: entities, block entities, particles and text carry the vanilla
+    // minecraft_mix_light() term instead (handled in the ENABLE_SHADOWS == 0 branch),
+    // not the block-orientation multiplier.
+    if (terrainFlag >= 0.5) {
+        vec3 nWorld = mat3(gbufferModelViewInverse) * N.xyz;
+        col.rgb /= vanillaFaceShade(nWorld);
+    }
+#endif
+
     // gl_Color.a must reach the output alpha (vanilla does texture.a * Color.a).
     // Terrain / entity models carry a == 1.0 so nothing changes there, but every
     // quad whose render type modulates alpha - the vanilla entity shadow blob,
@@ -272,6 +290,9 @@ void main()
     // oldLighting=false the orientation multiplier is dropped and all block faces
     // would get the same brightness, so this setting is required for vanilla parity.
     // Since the multiplier is already in color, no N·L / normal term is needed here.
+    // The shadow path above does the opposite: it divides that baked factor back out of
+    // col.rgb (vanillaFaceShade()) because it lights the face with its own directional
+    // term, which is how oldLighting is effectively switched off for ENABLE_SHADOWS == 1.
     // Note: SHADOW_BRIGHTNESS / BLOCK_LIGHT_INTENSITY / LAMBERT_MODE only belong to
     // the stylised shadowed path below and are intentionally ignored here.
     shad = texture2D(lightmap, coord1.xy).rgb;

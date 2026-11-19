@@ -43,6 +43,20 @@ const int noiseTextureResolution = 256;
 #define OUTLINE_THICKNESS 0.5 // Edge thickness [0.5 1.0 1.5 2.0 3.0]
 #define PAPER_WORLD OFF // [OFF ON]
 
+// Vanilla's fixed per-face brightness, see
+// BlockAndTintGetter.getShade(Direction, boolean shade):
+//   down 0.5, up 1.0, north/south 0.8, west/east 0.6
+// `oldLighting=true` in shaders.properties bakes exactly this into the vertex colour.
+// The face direction vanilla derives from a normal is Direction.getNearest(), which walks
+// DOWN, UP, NORTH, SOUTH, WEST, EAST and keeps the first maximum - so a tie is resolved in
+// that order (Y before X/Z, and Z before X). The comparisons below reproduce that order,
+// which keeps diagonal faces such as the cross models of grass and flowers matching.
+float vanillaFaceShade(vec3 worldNormal) {
+    vec3 a = abs(worldNormal);
+    if (a.y >= a.x && a.y >= a.z) return (worldNormal.y < 0.0) ? 0.5 : 1.0;
+    return (a.x > a.z) ? 0.6 : 0.8;
+}
+
 vec3 distortShadow(vec3 pos) {
     #if SHADOW_DISTORTION == 1
         float factor = length(pos.xy) + SHADOW_DISTORT_REDUCTION;

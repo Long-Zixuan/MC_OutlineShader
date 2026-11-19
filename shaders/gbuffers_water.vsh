@@ -3,6 +3,7 @@
 
 attribute vec2 mc_Entity;
 attribute vec3 mc_midTexCoord;
+attribute vec4 at_midBlock;
 
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
@@ -21,6 +22,7 @@ varying float id;
 varying vec3 shadowPos;
 varying vec3 vPos;
 varying vec4 N;
+varying float terrainFlag;
 
 void main()
 {
@@ -38,6 +40,22 @@ void main()
     // Determine block type
     float isWater = float(mc_Entity.x == 1.0);
     float isGlass = float(mc_Entity.x == 4.0);
+
+    // Per-face normal in view space, N.a is the water flag. N was never written
+    // before, so the shadow bias in gbuffers_water.fsh read an undefined varying, and
+    // the oldLighting compensation there needs the real block face direction.
+    vec3 nView = gl_NormalMatrix * gl_Normal;
+    float nLen = length(nView);
+    N.xyz = (nLen > 1e-5) ? nView / nLen : vec3(0.0, 1.0, 0.0);
+    N.a = isWater;
+
+    // Terrain-only flag, same test as gbuffers_textured.vsh: the per-face brightness
+    // that `oldLighting=true` bakes into gl_Color only exists on terrain. Entity models,
+    // particles and the entity shadow blob get neither mc_Entity.y nor at_midBlock.
+    terrainFlag = max(
+        step(0.5, abs(mc_Entity.y)),
+        step(1e-6, dot(at_midBlock.xyz, at_midBlock.xyz))
+    );
     
     float c = fract(pos.y+cameraPosition.y);
     c *= min(10.-c/.1,1.);

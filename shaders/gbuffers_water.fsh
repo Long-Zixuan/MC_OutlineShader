@@ -45,6 +45,7 @@ varying vec2 coord1;
 varying float id;
 varying vec3 vPos;
 varying vec4 N;
+varying float terrainFlag;
 
 uniform sampler2D gaux3; //Cel Ramp
 uniform sampler2D gaux4; //Toon Ramp
@@ -158,6 +159,18 @@ void main()
 
     // Apply vertex color
     col.rgb *= color.rgb;
+
+#if ENABLE_SHADOWS == 1
+    // Same oldLighting compensation as in gbuffers_textured.fsh: `oldLighting=true` leaves
+    // vanilla's per-face brightness in gl_Color on terrain, while the stylised lighting
+    // below computes its own directional term - so the vanilla factor is divided back out
+    // here instead of being applied twice. Kept inside the shadow option so the water look
+    // without shadows stays the same.
+    if (terrainFlag >= 0.5) {
+        vec3 nWorld = mat3(gbufferModelViewInverse) * N.xyz;
+        col.rgb /= vanillaFaceShade(nWorld);
+    }
+#endif
 
     // gl_Color.a must reach the output alpha. The most visible case is the vanilla
     // entity shadow (the "misc/shadow.png" blob drawn under every entity as a
