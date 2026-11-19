@@ -52,6 +52,10 @@ uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
 #define CEL (EXTRA_VECTOR3.x)
 #define PAPER_WORLD (EXTRA_VECTOR3.y)
 
+//LINEAR DEPTH
+#define LinearDepthMultiplier 0.001
+#define LinearDepthBias 0.7 
+
 #define SCREEN_VALUE 2000.0
 #define far (max(FAR_CHUNKS_DISTANCE, 16.0))
 
@@ -86,7 +90,7 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rampValue = 0.0001;
    if(LINEAR_DEPTH == ON)
    {
-      rampValue = 0.001;
+      rampValue = pow((1 - depth) * LinearDepthMultiplier, LinearDepthBias);
    }
    //rampValue = rampValue * (1 + depth * 1);
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
