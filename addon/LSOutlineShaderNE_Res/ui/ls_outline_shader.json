@@ -1149,19 +1149,37 @@
                             }
                         },
                         {
+                            "reset@ls_outline_shader.btn_base": {
+                                "$btn_texture": "textures/ls_outline_shader/button_bg",
+                                "$label_scale": 1.4,
+                                "$label_text": "重置",
+                                "anchor_from": "bottom_left",
+                                "anchor_to": "bottom_left",
+                                "layer": 10,
+                                "offset": [
+                                    6,
+                                    0
+                                ],
+                                "size": [
+                                    "46%",
+                                    15
+                                ]
+                            }
+                        },
+                        {
                             "close@ls_outline_shader.btn_base": {
                                 "$btn_texture": "textures/ls_outline_shader/close_bg",
                                 "$label_scale": 1.4,
                                 "$label_text": "关闭",
-                                "anchor_from": "bottom_middle",
-                                "anchor_to": "bottom_middle",
+                                "anchor_from": "bottom_right",
+                                "anchor_to": "bottom_right",
                                 "layer": 10,
                                 "offset": [
-                                    0,
+                                    -6,
                                     0
                                 ],
                                 "size": [
-                                    "100%+-16px",
+                                    "46%",
                                     15
                                 ]
                             }

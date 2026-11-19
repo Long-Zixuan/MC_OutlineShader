@@ -227,6 +227,18 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._values["OUTLINE_MODE_INSIDE"] = (mode == 0)
         self._values["OUTLINE_MODE_OUTSIDE"] = (mode == 1)
 
+    def _sync_setting_toggles(self):
+        """Mirror 内侧/外侧 into the universal settings page, when present."""
+        inst = self._setting_inst
+        if inst is None:
+            return
+        inside = not S.bool_value(self._values.get("OUTLINE_MODE_OUTSIDE", False))
+        try:
+            inst.SetToggleValue("OUTLINE_MODE_INSIDE", inside)
+            inst.SetToggleValue("OUTLINE_MODE_OUTSIDE", not inside)
+        except Exception:
+            pass
+
     def _save_config(self):
         ok = self._prefs.save(self._values)
         if ok:
@@ -351,6 +363,17 @@ class LSOutlineShaderNEClient(ClientSystem):
         self.Apply()
         self._save_config()
 
+    def reset_ui_defaults(self):
+        """Set every option back to its default value, then persist it."""
+        self._values = S.default_values()
+        self._sync_outline_toggles()
+        self._sync_setting_toggles()
+        self._dirty = True
+        self.Apply()
+        self._save_config()
+        print("[LSOutlineShaderNE] settings reset to defaults")
+        return self._values
+
     def OpenCustomUI(self):
         print("[LSOutlineShaderNE] OpenCustomUI (%s)" % S.UI_JSON_DEF)
         import LSOutlineShaderScript.LSOutlineShaderUIScreen as UI
@@ -456,12 +479,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._values["OUTLINE_MODE_INSIDE"] = not outside
         self._values["OUTLINE_MODE_OUTSIDE"] = outside
 
-        if self._setting_inst is not None:
-            try:
-                self._setting_inst.SetToggleValue("OUTLINE_MODE_INSIDE", not outside)
-                self._setting_inst.SetToggleValue("OUTLINE_MODE_OUTSIDE", outside)
-            except Exception:
-                pass
+        self._sync_setting_toggles()
 
         self._dirty = True
         self.Apply()

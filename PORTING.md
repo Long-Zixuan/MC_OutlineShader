@@ -197,7 +197,8 @@ Style:
 | 分组标题 | `label` |
 | 手机/PC 适配 | 屏幕右侧全高黑底；面板宽 42%（最大 360），行高按面板高度百分比，15 行完整显示 |
 | 左下角 logo | `image`（屏幕左下角，`textures/ls_outline_shader/logo.png`，屏幕宽 12%、高 5%） |
-| 关闭 | 面板底部整条深红 `关闭` 按钮 / **Esc**（`PopTopUI`） |
+| 关闭 | 面板底部右侧深红 `关闭` 按钮 / **Esc**（`PopTopUI`），两颗按钮各占 46% 宽 |
+| 重置 | 面板底部左侧 `重置` 按钮：所有选项回默认值，立即写后处理并保存 |
 
 > `TextureOutline` 的 3 项没有放进 `UI_ROWS`，面板不显示；参数仍以默认值
 > （关闭 / 0.8 / 0.5）传给着色器。需要显示时在 `UI_ROWS` 加回并同步 UI JSON。
@@ -248,6 +249,7 @@ PCF_SAMPLE / PCF_BLUR_RADIUS / SHADOW_DISTORTION / FAR_DISTANCE_BIAS_*
 | 改参数 | `SetParameter(process, paramName, [vec4])` | `LSOutlineShaderNEClient.Apply` |
 | 开关后处理 | `SetEnableByName(process, bool)` | 同上 |
 | 持久化 | `LSPrefs` 封装 `CreateConfigClient(...).Get/SetConfigData(..., isGlobal=True)`，每次修改立即写 | `_load_config` / `_save_config` / `set_ui_value` |
+| 重置默认值 | `ShaderSettings.default_values()` → `Apply()` → `_save_config()` | `reset_ui_defaults` |
 | 时机 | `UiInitFinished` 注册入口页；`OnScriptTickClient` 兜底重试/保存 | `OnUiInitFinished` / `OnScriptTickClient` |
 
 参数打包（每个后处理最多 4 个 `EXTRA_VECTOR`，这里各用 2~3 个）：

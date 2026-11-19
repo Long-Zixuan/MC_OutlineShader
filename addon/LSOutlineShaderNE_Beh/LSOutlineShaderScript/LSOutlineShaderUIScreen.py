@@ -123,7 +123,7 @@ class LSOutlineShaderUIScreen(ScreenNode):
     def BindButtons(self):
         content = self.GetContent()
         print("[LSOutlineShaderNE] rows content: %s" % (content is not None))
-        paths = ["/settings_panel/close"]
+        paths = ["/settings_panel/reset", "/settings_panel/close"]
         for key in S.UI_NUMBER_KEYS:
             paths.append("/settings_panel/dec_" + key)
             paths.append("/settings_panel/inc_" + key)
@@ -173,6 +173,8 @@ class LSOutlineShaderUIScreen(ScreenNode):
             self.Toggle(name[7:])
         elif name.startswith("mode_"):
             self.SetMode(name == "mode_OUTSIDE")
+        elif name == "reset":
+            self.ResetAll()
 
     # ------------------------------------------------------------------ actions
     def Step(self, key, delta):
@@ -201,6 +203,14 @@ class LSOutlineShaderUIScreen(ScreenNode):
             return
         HOST.set_ui_mode(outside)
         self.RefreshMode(outside)
+
+    def ResetAll(self):
+        """「重置」按钮：所有选项回到默认值，并立即写入全局设置。"""
+        if HOST is None:
+            return
+        print("[LSOutlineShaderNE] reset button clicked")
+        HOST.reset_ui_defaults()
+        self.Refresh()
 
     # ------------------------------------------------------------------ refresh
     def Refresh(self):

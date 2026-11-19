@@ -12,7 +12,7 @@
 - 原版 18 个可调参数全部接入；按需求把纹理描边 3 项从设置页隐藏（参数保留默认值），
   其余 15 项 + 一个总开关通过自定义 UI 调节，改动即时生效并持久化。
 - 设置入口保留在官方「暂停菜单 → 模组」通用设置页里，点「打开设置」后进入自定义面板；
-  面板支持滚动/比例布局，**Esc 或底部「关闭」按钮**都能退出。
+  面板支持滚动/比例布局，**Esc 或底部「关闭」按钮**都能退出，底部「重置」可一键恢复默认值。
 - 所有新增文件都在 **`ne_be/`** 下。
 
 > 包名、脚本根目录、UI 命名空间、材质/后处理名、贴图路径都加了 `LS` 前缀
@@ -124,7 +124,8 @@ ModPC 用命名空间即可。位置：
 - 行高按面板高度百分比排布，15 行参数在手机/PC 上都完整显示，不会被截断。
 - 每个数值项显示实际值，用 `-` / `+` 按档位调整，不再出现 `0..N` 的滑条档位号。
 - 描边模式是「内侧 / 外侧」两个按钮，选中的那个带 `●`。
-- 面板底部是整条深红「关闭」按钮，点一下回到游戏；**Esc 也可以退出**；屏幕左下角是 `LONGY SOFTWARE` logo（屏幕宽 12%、高 5%）。
+- 面板底部是并排的两颗按钮：左侧「重置」把所有选项恢复默认值并立即保存，
+  右侧深红「关闭」点一下回到游戏；**Esc 也可以退出**；屏幕左下角是 `LONGY SOFTWARE` logo（屏幕宽 12%、高 5%）。
 
 面板布局：
 
@@ -149,6 +150,7 @@ ModPC 用命名空间即可。位置：
   阴影亮度      -  0.6     +
   方块光强度    -  0.8     +
   方块光增强    -  1.25    +
+[ 重置 ]        [ 关闭 ]
 [ LONGY SOFTWARE ]
 ```
 
@@ -205,6 +207,8 @@ logo 已移出设置面板，放在**屏幕左下角**（红圈位置）：
 
 - **全局统一**：所有存档共用一份设置，不随存档切换；
 - 每次 `- / +`、开关、模式切换都**立即写入**，关闭面板/Esc 时再写一次；
+- **「重置」按钮**把所有选项（含面板上隐藏的 3 个纹理描边参数）恢复成
+  `ShaderSettings.default_values()` 的默认值，立即应用并写入全局设置；
 - 重新进入任何存档都会自动读取；
 - 首次运行会把旧键 `outline_shader_ne_settings_v1` 迁移到
   `ls_outline_shader_ne_settings_v1`；
@@ -304,6 +308,7 @@ python ne_be/tools/validate_port.py
 | 自定义面板没出现 | 日志里有没有 `RegisterUI -> True`、`PushScreen called` 和 `custom UI created`；检查 `UI_JSON_DEF = "ls_outline_shader.main"` 与 JSON 的 namespace/根节点是否一致 |
 | 面板出现了，但背后还是暂停菜单 | `CloseSettingUI`/`PopTopUI` 没关掉原生界面；先按 Esc 回到游戏，再重开面板 |
 | 面板按钮没反应 | 日志里有没有 `UI control missing`；`ButtonPath` 是否传到回调；按钮是否是 `type: button` |
+| 「重置」按钮没反应/选项没变回默认 | 日志里有没有 `reset button clicked`、`settings reset to defaults`；缺控件时会打印 `UI control missing: /settings_panel/reset`，检查 `ui/ls_outline_shader.json` 里是否还有该按钮 |
 | 面板文字空白 | Python 2 的 ModAPI 要 UTF-8 `str`；代码已用 `ShaderSettings.api_text()` 统一编码。新增按钮/文本后重启开发测试 |
 | 有面板，但画面完全没变化 | 资源包是否启用；日志里有没有 `AddPostProcess ... failed` / `post-process not ready`；是否运行在**渲染龙**客户端（本项目只支持非渲染龙的 GLSL 材质管线） |
 | 描边位置/宽度不对 | 先调 `描边偏移`；`TEXTURE_DIMENSIONS` 异常时着色器会用 UV 导数回退 |
