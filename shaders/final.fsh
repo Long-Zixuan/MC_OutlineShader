@@ -20,7 +20,7 @@
 #define SCREEN_VALUE 2000
 
 //LINEAR DEPTH
-#define L_DEPTH_MAX 0.5 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+#define L_DEPTH_MAX 0.2
 
 uniform float far;
 uniform sampler2D depthtex0;
