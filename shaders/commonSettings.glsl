@@ -46,14 +46,24 @@ const int noiseTextureResolution = 256;
 // Vanilla's fixed per-face brightness, see
 // BlockAndTintGetter.getShade(Direction, boolean shade):
 //   down 0.5, up 1.0, north/south 0.8, west/east 0.6
-// `oldLighting=true` in shaders.properties bakes exactly this into the vertex colour.
-// The face direction vanilla derives from a normal is Direction.getNearest(), which walks
-// DOWN, UP, NORTH, SOUTH, WEST, EAST and keeps the first maximum - so a tie is resolved in
-// that order (Y before X/Z, and Z before X). The comparisons below reproduce that order,
-// which keeps diagonal faces such as the cross models of grass and flowers matching.
+// `oldLighting=true` in shaders.properties bakes exactly this into the vertex colour, but
+// only for faces vanilla actually shades: a model can opt out with "shade": false, and that
+// is what the cross models of grass, flowers and crops do (they also set
+// "ambientocclusion": false), so those keep a factor of 1.0.
+// Those cross models are rotated 45 deg, so their normal is diagonal - anything that is not
+// clearly axis-aligned is treated as unshaded (1.0) below. That is also what keeps plants
+// stable: on a 45 deg normal the x and z components are almost equal, so the axis test would
+// flip between 0.6 and 0.8 from pixel to pixel, which shows up as flicker where the two
+// quads of a cross model cross each other.
+// For the axis-aligned remainder the test reproduces Direction.getNearest(), which walks
+// DOWN, UP, NORTH, SOUTH, WEST, EAST and keeps the first maximum - so ties resolve in that
+// order (Y before X/Z, and Z before X).
 float vanillaFaceShade(vec3 worldNormal) {
-    vec3 a = abs(worldNormal);
-    if (a.y >= a.x && a.y >= a.z) return (worldNormal.y < 0.0) ? 0.5 : 1.0;
+    vec3 n = normalize(worldNormal); // zero or NaN normals fall through to 1.0 below
+    vec3 a = abs(n);
+    float axis = max(a.x, max(a.y, a.z));
+    if (!(axis >= 0.85)) return 1.0; // diagonal normal: "shade": false geometry
+    if (a.y >= a.x && a.y >= a.z) return (n.y < 0.0) ? 0.5 : 1.0;
     return (a.x > a.z) ? 0.6 : 0.8;
 }
 
