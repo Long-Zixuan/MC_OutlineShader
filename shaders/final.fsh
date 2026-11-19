@@ -19,6 +19,9 @@
 //#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 
+//LINEAR DEPTH
+#define L_DEPTH_MAX 0.5 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+
 uniform float far;
 uniform sampler2D depthtex0;
 
@@ -49,7 +52,14 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rampValue = 0.0001;
    if(LINEAR_DEPTH == ON)
    {
-      rampValue = 0.001;
+      if(depth > L_DEPTH_MAX)//线性深度是反的
+      {
+         rampValue = 0.001;
+      }
+      else
+      {
+         rampValue = 1;//不显示描边
+      }
    }
    //rampValue = rampValue * (1 + depth * 1);
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
