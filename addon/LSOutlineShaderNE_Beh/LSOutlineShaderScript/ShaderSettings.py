@@ -65,7 +65,7 @@ OUTLINE_THICKNESS_OPTIONS = [0.5, 1.0, 1.5, 2.0, 3.0]
 
 SHININESS_OPTIONS = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-SHADOW_BRIGHTNESS_OPTIONS = [round(i * 0.05, 2) for i in range(21)]
+SHADOW_BRIGHTNESS_OPTIONS = [round(0.7 + i * 0.05, 2) for i in range(7)]
 BLOCK_LIGHT_INTENSITY_OPTIONS = [0.0, 0.25, 0.5, 0.75, 0.8, 0.85, 1.0, 1.25, 1.5, 2.0]
 BLOCK_LIGHT_SHADOW_BOOST_OPTIONS = [1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5]
 
@@ -156,7 +156,7 @@ CONTROLS = [
      "options": SHADOW_DISTANCE_OPTIONS, "default": 0},
 
     {"kind": "slider", "key": "SHADOW_BRIGHTNESS", "label": u"阴影亮度",
-     "options": SHADOW_BRIGHTNESS_OPTIONS, "default": 12},
+     "options": SHADOW_BRIGHTNESS_OPTIONS, "default": 3},
 
     {"kind": "slider", "key": "BLOCK_LIGHT_INTENSITY", "label": u"方块光强度",
      "options": BLOCK_LIGHT_INTENSITY_OPTIONS, "default": 4},

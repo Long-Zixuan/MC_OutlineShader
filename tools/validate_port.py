@@ -263,7 +263,8 @@ check("FAR_CHUNKS_DISTANCE" in frag, "far plane taken from the engine depth far 
 shadow = io.open(SHADOW_FRAGMENT, "r", encoding="utf-8").read()
 check("EXTRA_VECTOR1" in shadow and "EXTRA_VECTOR2" in shadow,
       "shadow pass receives all shadow parameters")
-check("inverse(PROJ)" in shadow, "shadow pass reconstructs view depth")
+check("FAR_CHUNKS_DISTANCE" in shadow and "gbufferProjectionInverse" not in shadow,
+      "shadow pass reconstructs view depth without the projection inverse")
 
 # ---------------------------------------------------------------------------
 # 2. option tables
