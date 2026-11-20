@@ -97,10 +97,10 @@ const vec2 offsets[32] = vec2[32](
 // Water-specific PCF shadow sampling with reduced samples and increased bias
 float sWaterPCF(sampler2D sTex, vec3 sSPos, float bRad){
     float sMap = 0.0;
-    float bNoise = texture(noisetex, gl_FragCoord.xy / vec2(noiseTextureResolution)).r;
+    float bNoise = texture2D(noisetex, gl_FragCoord.xy / vec2(noiseTextureResolution)).r;
     int samples = min(WATER_PCF_SAMPLES, PCF_SAMPLE);
     for(int i = 0; i < samples; i++){
-        sMap += step(sSPos.z, texture(sTex, sSPos.xy + (rot2D(bNoise * 6.28318531) * offsets[i] * bRad * WATER_SHADOW_SOFTNESS)).r);
+        sMap += step(sSPos.z, texture2D(sTex, sSPos.xy + (rot2D(bNoise * 6.28318531) * offsets[i] * bRad * WATER_SHADOW_SOFTNESS)).r);
     }
     return sMap / float(samples);
 }
@@ -229,8 +229,8 @@ void main()
 				float sMap0 = sWaterPCF(shadowtex0, sSPos, bRad);
 				float sMap1 = sWaterPCF(shadowtex1, sSPos, bRad);
 			#else
-				float sMap0 = step(sSPos.z, texture(shadowtex0, sSPos.xy).r);
-				float sMap1 = step(sSPos.z, texture(shadowtex1, sSPos.xy).r);
+				float sMap0 = step(sSPos.z, texture2D(shadowtex0, sSPos.xy).r);
+				float sMap1 = step(sSPos.z, texture2D(shadowtex1, sSPos.xy).r);
 			#endif
 
 			// Calculate shadow factor for sun glare modulation
