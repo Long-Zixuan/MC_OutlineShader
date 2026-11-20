@@ -415,9 +415,13 @@ void main()
 	float sBright = mix(SHADOW_BRIGHTNESS, 1.0, rainStrength);
 	float lVis = texture2D(lightmap, vec2(0.0, coord1.y)).r;
 
-	// Always sample at FULL block light coordinate to get the proper lightmap value
-	vec3 lMapFull = texture2D(lightmap, vec2(coord1.x, coord1.y * sBright)).rgb;
-	vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y * sBright)).rgb;
+	// Sky light is sampled at its FULL value. `sBright` describes how much of it a
+	// *shadowed* surface keeps, so it must not be applied to every pixel: dimming the
+	// lightmap globally made the whole daytime lose ~40% of its sky light (day looked
+	// like night) and left the sun term without headroom, so lit and shadowed surfaces
+	// ended up close in brightness. The per-pixel shadow factor is applied further down.
+	vec3 lMapFull = texture2D(lightmap, vec2(coord1.x, coord1.y)).rgb;
+	vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y)).rgb;
 
 	// Calculate the block light contribution (difference between full and ambient)
 	vec3 blockLightContribution = max(vec3(0.0), lMapFull - lMapAmbient);
@@ -445,7 +449,11 @@ void main()
 	// zeroed both the sky light and the block light term, which turned an entity
 	// standing in an occluded spot pitch black while the terrain around it
 	// (a == 1.0) stayed correctly lit.
-	vec3 skyLight = lMapAmbient;
+	// Full sky light where the sun reaches the face, only `sBright` of it where the shadow
+	// map says the sun is blocked. That is the contrast between light and shadow: the sun
+	// term below then adds the direct light on the lit side only, instead of the ambient
+	// being equally dimmed everywhere. sLight = visibility * N.L * 2, so * 0.5 gives 0..1.
+	vec3 skyLight = lMapAmbient * mix(sBright, 1.0, clamp(dot(sLight, vec3(0.5)), 0.0, 1.0));
 	vec3 blockLight = blockLightContribution
 		* (BLOCK_LIGHT_INTENSITY * mix(1.0, BLOCK_LIGHT_SHADOW_BOOST, shadowAmount));
 

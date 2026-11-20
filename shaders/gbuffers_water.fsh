@@ -256,8 +256,17 @@ void main()
 
 	// Sample the light map at the FULL block light coordinate and at zero block
 	// light; the difference is the block light (torch, lantern, ...) contribution.
-	vec3 lMapFull = texture2D(lightmap, vec2(coord1.x, coord1.y * sBright)).rgb;
-	vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y * sBright)).rgb;
+	// With shadows enabled the sky light is read at its full value, and `sBright` is
+	// applied per pixel further down instead, so daytime keeps its real brightness (see
+	// gbuffers_textured.fsh). Guarded by the shadow option because this program is also
+	// drawn with shadows disabled, and that look has to stay exactly as it was.
+	#if ENABLE_SHADOWS == 1
+		vec3 lMapFull = texture2D(lightmap, vec2(coord1.x, coord1.y)).rgb;
+		vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y)).rgb;
+	#else
+		vec3 lMapFull = texture2D(lightmap, vec2(coord1.x, coord1.y * sBright)).rgb;
+		vec3 lMapAmbient = texture2D(lightmap, vec2(0.0, coord1.y * sBright)).rgb;
+	#endif
 	vec3 blockLightContribution = max(vec3(0.0), lMapFull - lMapAmbient);
 
 	// How much of the sun reaches this face: 0 = sunlit, 1 = in shadow / facing away.
@@ -268,7 +277,14 @@ void main()
 	// gl_Color.a is deliberately not used here either - without "separateAo" the AO
 	// is already in gl_Color.rgb, and for non-terrain geometry a is a tint alpha
 	// that can be 0.0 (see the detailed comment in gbuffers_textured.fsh).
-	vec3 skyLight = lMapAmbient;
+	// With shadows enabled: full sky light where the sun reaches the face, only `sBright`
+	// of it in shadow - that is what keeps light and shadow apart (see
+	// gbuffers_textured.fsh). Without shadows the original behaviour is kept untouched.
+	#if ENABLE_SHADOWS == 1
+		vec3 skyLight = lMapAmbient * mix(sBright, 1.0, clamp(dot(sLight, vec3(0.5)), 0.0, 1.0));
+	#else
+		vec3 skyLight = lMapAmbient;
+	#endif
 	vec3 blockLight = blockLightContribution
 		* (BLOCK_LIGHT_INTENSITY * mix(1.0, BLOCK_LIGHT_SHADOW_BOOST, shadowAmount));
 
