@@ -229,6 +229,10 @@ uniform float far;
 #define OUTLINE_MODE INSIDE // [INSIDE OUTSIDE]
 //#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
+//LINEAR DEPTH
+#define LinearDepthMultiplier 0.001
+#define LinearDepthBias 0.7 
+
 uniform sampler2D depthtex0;
 
 uniform sampler2D colortex0;
@@ -259,7 +263,7 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rampValue = 0.0001;
    if(LINEAR_DEPTH == ON)
    {
-      rampValue = 0.001;
+      rampValue = pow((1 - depth) * LinearDepthMultiplier, LinearDepthBias);
    }
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
 
