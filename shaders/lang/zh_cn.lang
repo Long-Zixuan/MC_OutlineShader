@@ -66,5 +66,3 @@ option.SHADOW_BRIGHTNESS = 阴影亮度
 option.SHADOW_BRIGHTNESS.comment = 处于阴影中时表面保留的天空光亮度
 option.BLOCK_LIGHT_INTENSITY = 方块光源亮度
 option.BLOCK_LIGHT_INTENSITY.comment = 火把、灯笼等方块光源的亮度
-option.BLOCK_LIGHT_SHADOW_BOOST = 阴影中的火把光
-option.BLOCK_LIGHT_SHADOW_BOOST.comment = 太阳照不到的面（阴影中或背光面）上额外的方块光亮度。觉得背光面火把太暗可以调高，1.0 表示不额外增强
