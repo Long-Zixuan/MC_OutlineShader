@@ -38,6 +38,11 @@ const float maxSpan = 8.0;
 
 uniform mat4 gbufferProjectionInverse;
 varying vec2 texcoord;
+uniform float frameTimeCounter;   // 游戏运行时间(秒)，由 OptiFine/Iris 提供
+#ifdef IS_IRIS
+   uniform float currentPlayerHealth;
+   uniform float maxPlayerHealth;   // 最大生命值
+#endif
 
 /* DRAWBUFFERS:0 */
 
@@ -109,6 +114,12 @@ void main()
    float rimIntensity = max(rimIntensityV,rimIntensityH);
 
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
+   #ifdef IS_IRIS
+      if(currentPlayerHealth * maxPlayerHealth <= 4.0)
+      {
+         outlineCol = mix(vec4(1,0,0,1),outlineCol,clamp(sin(frameTimeCounter / 0.1),0.0,1.0));
+      }
+   #endif
 
    if(rimIntensity == 1)
    {
