@@ -3,8 +3,8 @@
 // Shadow settings
 #define ENABLE_SHADOWS OFF // Enable shadow mapping [OFF ON]
 #define COLORED_SHADOWS ON // Enable colored shadows [OFF ON]
-#define SHADOW_BRIGHTNESS 0.60 //Light levels are multiplied by this number when the surface is in shadows [0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00]
-#define BLOCK_LIGHT_INTENSITY 0.8 // Controls brightness of block lights (torches, lanterns, etc) [0.0 0.25 0.5 0.75 0.8 0.85 1.0 1.25 1.5 2.0]
+#define SHADOW_BRIGHTNESS 0.15 //Light levels are multiplied by this number when the surface is in shadows [0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70]
+#define BLOCK_LIGHT_INTENSITY 1.5 // Controls brightness of block lights (torches, lanterns, etc) [0.0 0.25 0.5 0.75 0.8 0.85 1.0 1.25 1.5 2.0]
 #define BLOCK_LIGHT_SHADOW_BOOST 1.0 // Extra block light (torch, lantern, ...) brightness for faces the sun does not reach. 1.0 = no boost [1.0 1.1 1.25 1.5 1.75 2.0 2.5]
 
 //texture settings - Updated to use style system:
