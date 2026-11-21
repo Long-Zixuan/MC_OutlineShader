@@ -152,7 +152,7 @@ class LSOutlineShaderNEClient(ClientSystem):
 
     def ScreenSizeChangedClientEvent(self, args):
         comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        comp.AddTimer(1.0,self.Apply)
+        comp.AddTimer(1.0/3.0,self.Apply) # 延迟10tick （1/3秒）
 
     def DimensionChangeFinishClientEvent(self, args):
         print("[LSOutlineShaderNE] dimension change finished")
