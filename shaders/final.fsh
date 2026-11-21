@@ -115,7 +115,7 @@ void main()
 
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
    #ifdef IS_IRIS
-      if(currentPlayerHealth * maxPlayerHealth <= 4.0)
+      if(currentPlayerHealth * maxPlayerHealth <= 4.0 && maxPlayerHealth > 0.0)
       {
          outlineCol = mix(vec4(1,0,0,1),outlineCol,clamp(sin(frameTimeCounter / 0.1),0.0,1.0));
       }
