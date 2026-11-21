@@ -71,6 +71,7 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._ui_tries = 0
         self._processes_ready = False
         self._ticks = 0
+        self._sc_change_tick = -1 #小于0代表已经刷新过
         self._warned = False
         self._dirty = False
         self._ui_logged = False
@@ -151,8 +152,9 @@ class LSOutlineShaderNEClient(ClientSystem):
         self.Apply()
 
     def ScreenSizeChangedClientEvent(self, args):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        comp.AddTimer(1.0/3.0,self.Apply) # 延迟10tick （1/3秒）
+        self._sc_change_tick = self._ticks
+        #comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
+        #comp.AddTimer(1.0/3.0,self.Apply) # 延迟10tick （1/3秒）
 
     def DimensionChangeFinishClientEvent(self, args):
         print("[LSOutlineShaderNE] dimension change finished")
@@ -196,8 +198,10 @@ class LSOutlineShaderNEClient(ClientSystem):
         except Exception:
             pass
 
-    def OnScriptTickClient(self): #只能说这里面写的东西都很冗余啊，而且会引发很多bug，而且原本传参错了还一直报错
+    def OnScriptTickClient(self): 
         self._ticks += 1
+        if self._ticks - self._sc_change_tick >= 10: #目前就这一个，就不封装了，加上现在项目也没有框架，就暂时这样子写吧
+            self.Apply()
 
     # ------------------------------------------------------------------ config
     def _load_config(self):
