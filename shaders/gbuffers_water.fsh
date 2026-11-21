@@ -251,7 +251,13 @@ void main()
     vec4 shine = vec4(vec3(sun)*flip*flip,0)*Shininess*step(.9,id)*step(id,1.1) * shadowFactor;
 	
 	// LIGHTING CALCULATION
-	float sBright = mix(SHADOW_BRIGHTNESS, 1.0, rainStrength);
+    float shadowBrightness = SHADOW_BRIGHTNESS;
+    #ifdef IS_IRIS
+
+    #else
+    shadowBrightness = min(0.85, SHADOW_BRIGHTNESS + 0.5);
+    #endif
+	float sBright = mix(shadowBrightness, 1.0, rainStrength);
 	float lVis = texture2D(lightmap, vec2(0.0, coord1.y)).r;
 
 	// Sample the light map at the FULL block light coordinate and at zero block

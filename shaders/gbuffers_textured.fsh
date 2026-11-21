@@ -412,7 +412,13 @@ void main()
 	#endif
 
 	// LIGHTING CALCULATION
-	float sBright = mix(SHADOW_BRIGHTNESS, 1.0, rainStrength);
+    float shadowBrightness = SHADOW_BRIGHTNESS;
+    #ifdef IS_IRIS
+
+    #else
+    shadowBrightness = min(0.85, SHADOW_BRIGHTNESS + 0.5);
+    #endif
+	float sBright = mix(shadowBrightness, 1.0, rainStrength);
 	float lVis = texture2D(lightmap, vec2(0.0, coord1.y)).r;
 
 	// Sky light is sampled at its FULL value. `sBright` describes how much of it a
