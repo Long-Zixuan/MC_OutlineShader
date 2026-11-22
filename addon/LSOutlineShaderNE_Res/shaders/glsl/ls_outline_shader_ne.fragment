@@ -51,6 +51,8 @@ uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
 #define OUTLINE_THICKNESS (EXTRA_VECTOR2.w)
 #define CEL (EXTRA_VECTOR3.x)
 #define PAPER_WORLD (EXTRA_VECTOR3.y)
+#define IS_LOW_HEALTH (EXTRA_VECTOR3.z)
+#define IS_SURVIVAL (EXTRA_VECTOR3.w)
 
 //LINEAR DEPTH
 #define LinearDepthMultiplier 0.001
@@ -218,6 +220,10 @@ void main()
    float rimIntensity = max(rimIntensityV,rimIntensityH);
 
    vec4 outlineCol = vec4(OUTLINE_COL,OUTLINE_COL,OUTLINE_COL,1);
+   if(IS_LOW_HEALTH == 1.0 && IS_SURVIVAL == 1.0)
+   {
+      outlineCol = mix(vec4(1,0,0,1),outlineCol,clamp(sin(TIME / 0.1),0.0,1.0));
+   }
 
    // ---- PAPER_WORLD: gbuffers_*.fsh wrote vec4(1.0) instead of the lit colour
    if(PAPER_WORLD == ON)

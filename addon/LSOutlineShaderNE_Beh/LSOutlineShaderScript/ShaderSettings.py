@@ -81,6 +81,9 @@ SHADOW_DISTANCE_LABELS = [
     "288", "320", "352", "384", "416", "448", "480", "512",
 ]
 
+IS_LOW_HEALTH = False
+IS_SURVIVAL = False
+
 # ---------------------------------------------------------------------------
 # UI controls.  Order here == order in the settings page.
 #   kind: text | toggle | slider | dropdown
@@ -306,8 +309,8 @@ def outline_params(values):
     vector3 = [
         1.0 if bool_value(values["CEL"]) else 0.0,
         1.0 if bool_value(values["PAPER_WORLD"]) else 0.0,
-        0.0,
-        0.0,
+        1.0 if IS_LOW_HEALTH else 0.0, #IS_LOW_HEALTH
+        1.0 if IS_SURVIVAL else 0.0,
     ]
     return vector1, vector2, vector3
 

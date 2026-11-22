@@ -83,6 +83,12 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._push_check_tick = 0
         self._push_retried = False
         self._custom_ui_open = False
+        compGame = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
+        gameType = compGame.GetPlayerGameType(clientApi.GetLocalPlayerId())
+        S.IS_SURVIVAL = gameType == 0 or gameType == 2
+        compAttr = clientApi.GetEngineCompFactory().CreateAttr(clientApi.GetLocalPlayerId())
+        health = compAttr.GetAttrValue(clientApi.GetMinecraftEnum().AttrType.HEALTH)      # 当前生命值
+        S.IS_LOW_HEALTH = health <= 4.0
 
         self._load_config()
 
@@ -121,6 +127,20 @@ class LSOutlineShaderNEClient(ClientSystem):
             self,
             self.ScreenSizeChangedClientEvent
         )
+        self.ListenForEvent(
+            clientApi.GetEngineNamespace(),
+            clientApi.GetEngineSystemName(),
+            "HealthChangeClientEvent",
+            self,
+            self.HealthChangeClientEvent
+        )
+        self.ListenForEvent(
+            clientApi.GetEngineNamespace(),
+            clientApi.GetEngineSystemName(),
+            "GameTypeChangedClientEvent",
+            self,
+            self.GameTypeChangedClientEvent
+        )
         print("[LSOutlineShaderNE] client system ready")
 
     # ------------------------------------------------------------------ events
@@ -150,6 +170,22 @@ class LSOutlineShaderNEClient(ClientSystem):
         self._ui_ready = False
         self.RegisterSettings()
         self.Apply()
+
+    def GameTypeChangedClientEvent(self, args):
+        if args['playerId'] == clientApi.GetLocalPlayerId():
+            if args['newGameType'] == 0 or args['newGameType'] == 2:
+                S.IS_SURVIVAL = True
+            else:
+                S.IS_SURVIVAL = False
+            self.Apply()
+
+    def HealthChangeClientEvent(self, args):
+        if args['entityId'] == clientApi.GetLocalPlayerId():
+            if args['to'] <= 4.0:
+                S.IS_LOW_HEALTH = True
+            else:
+                S.IS_LOW_HEALTH = False
+            self.Apply()
 
     def ScreenSizeChangedClientEvent(self, args):
         self._sc_change_tick = self._ticks
