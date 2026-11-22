@@ -256,6 +256,7 @@ vec3 skyLight = lMapAmbient;
 | --- | --- |
 | 2026-11-21 | 初版：天光按满值采样，`SHADOW_BRIGHTNESS` 只作用于无太阳的一面；水面加 `#if` 保护 |
 | 2026-11-21 | 撤回上一版「白天抬高 `sBright`」的写法（会把亮暗一起抬、挤掉太阳项），见 2.6 |
+| 2026-11-22 | 1.7.2 石头摩尔纹：`block.properties` 补 pre-1.13 映射，并把石头归入 `block.6`（`id>1.5`），见第 10 节 |
 
 ---
 
@@ -266,6 +267,79 @@ vec3 skyLight = lMapAmbient;
 - 原版光照贴图的合成方式（天空光 / 方块光取较大者）：`LightTexture.updateLightTexture`
 - `SHADOW_BRIGHTNESS` 选项定义：`commonSettings.glsl:6`
 - 阴影路径的 `sLight` 计算：`gbuffers_textured.fsh:338-410`
+
+---
+
+## 10. 1.13之前 石头摩尔纹（block.properties 分组缺失）
+
+> 记录另一次修复：MC 1.7.2（老 OptiFine / ShadersMod 光影加载器）开启「阴影」后，
+> **石头**表面出现大片斜向矩形色块；其它方块看不出；1.13+ 正常。
+>
+> 涉及文件：`shaders/block.properties`（只动 `#else` 分支，`#if MC_VERSION >= 11300` 那一支未改）
+
+### 10.1 现象
+
+- 仅 1.7.2：开阴影 → 平墙 / 平地上的石头出现斜向矩形条纹（摩尔纹）；
+- 草、玻璃、木板等看不出；
+- 关阴影、或 1.13+，都没有；
+- **提高 `shadowMapResolution`（1024 → 2048 / 4096）完全没变化** —— 说明与阴影贴图分辨率 / 纹素大小无关。
+
+### 10.2 原理
+
+根子在 `gbuffers_textured.fsh:203` 这一句：
+
+```glsl
+float lambert = (id>1.5) ? pow(dir.y*.5+.5,2) : pow(dot(norm,dir)*0.5+0.5,2);
+```
+
+- `id = mc_Entity.x`，由 `block.properties` 的组号决定；**没被任何组列出的方块 `id = -1`**。
+- 已分组方块（`id>1.5`）：`lambert` 用 `dir.y`，即太阳方向的竖直分量，**一帧内是常量**，不随像素变化；
+- 未分组方块（`id=-1`）：`lambert` 用 `dot(norm, dir)`，而
+
+```glsl
+// gbuffers_textured.fsh:200
+vec3 norm = normalize(cross(dFdx(world), dFdy(world)));
+```
+
+是**屏幕空间导数法线**。平墙 + 掠射角时，`norm` 在相邻像素间会抖，`lambert` 跟着抖；再被 `ramp.png`（500×2，第一行是离散阶梯 toon ramp）量化，就形成大片斜向矩形。
+
+- 为什么只有石头显眼：石头纹理最平、最均匀，其它方块的高频纹理把这种低幅度明暗差盖住了；
+- 为什么 1.13+ 没有：老加载器对 `dFdx/dFdy` 和顶点插值精度的处理更差，导数法线抖得更明显；1.13+ 的加载器 / 驱动更稳。**同一段 shader 代码，跑在老加载器上更糟**，不是逻辑在版本间不同。
+
+> 注意：这正好解释「提高阴影分辨率无效」——摩尔纹来自 `lambert` 的抖动，而不是阴影贴图的采样精度。
+
+### 10.3 修改（`shaders/block.properties`）
+
+1.13 的「扁平化」移除了数字方块 ID，所以 `#if MC_VERSION >= 11300` 的分工是：**1.13+ 用名字，1.13 以前用数字 ID**。在 `#else`（`MC_VERSION < 11300`）分支里补齐 pre-1.13 映射，并**单独给石头一个组**：
+
+```properties
+#else
+#Pre-1.13 Mapping (numeric block IDs, 1.7.2 ~ 1.12.2):
+block.1 = 8 9
+block.2 = 2 31 175 37 38 59 83 32 30 6 39 40 115 141 142 207
+block.4 = 20 95 102 160
+block.5 = 50 51 10 11 89 90 91 138 75 76 61 62 169 198 213
+#stone (ID 1): id > 1.5 -> dir.y lambert instead of the derivative normal
+block.6 = 1 stone
+#endif
+```
+
+要点：
+
+- `block.6 = 1 stone`：`1` 是 1.7.2 石头的数字 ID（含花岗岩 / 闪长岩 / 安山岩的 metadata），`stone` 是名字兜底；加载器认哪种格式就用哪种，另一种被忽略。
+- **为什么必须单独写 `block.6`**：石头原本不在 `block.1/2/4/5` 任何一组里，只补那四组改不到石头；只有把石头塞进一个 `id>1.5` 的组，才会真正改变它的光照分支。
+
+### 10.4 行为变化 / 代价
+
+- 1.7.2 上石头从「导数法线光照」切到「`dir.y` 平面光照」：斜纹消失，但朝向性光照变平（所有朝向同亮度）；
+- 1.13+ **完全不变**：`block.6` 只写在 `#else`，`#if` 分支不会编译到它；
+- 同时补齐了 1.7.2 的水 / 草 / 玻璃 / 发光分组（原本这些组在 1.7.2 上也是空的）。
+
+### 10.5 验证与注意
+
+- `block.properties` 是游戏**启动时**读取的，`F3+R` 重载光影不一定重读；改完务必**完全重启游戏**；
+- 验证：1.7.2 + 阴影开 → 石墙斜纹消失；1.13+ → 石头观感不变；
+- 如果以后想让石头保留朝向性光照又不出纹，就不能只改 `block.properties`，得动 `gbuffers_textured.fsh` 里 `norm` 的计算（本次未动）。
 
 ---
 
@@ -291,3 +365,15 @@ shadowed pixels together and squeezes the sun term's weight, which made the imag
 `gbuffers_water.fsh` shares its path with the shadows-disabled look, so the new code is
 wrapped in `#if ENABLE_SHADOWS == 1`; a line-by-line comparison of the preprocessed sources
 confirms the shadows-disabled output is byte-identical to the previous commit.
+
+**Stone moiré on 1.7.2 (block.properties).** On 1.7.2 with shadows enabled, flat stone showed
+wide diagonal bands while other blocks looked fine and 1.13+ was clean; raising
+`shadowMapResolution` changed nothing. The bands come from
+`lambert = (id>1.5) ? dir.y : dot(norm, dir)` (`gbuffers_textured.fsh:203`). Stone was not
+listed in any `block.*` group, so `id` was -1 and it took the `dot(norm, dir)` branch, where
+`norm = normalize(cross(dFdx(world), dFdy(world)))` jitters on flat faces at grazing angles on
+the old 1.7.2 loader; the stepped `ramp.png` then quantized that jitter into diagonal blocks.
+Adding `block.6 = 1 stone` in the `#else` branch of `block.properties` gives stone an
+`id = 6 > 1.5`, switching it to the steady `dir.y` term and removing the bands. The trade-off is
+flat (non-directional) lighting on stone; 1.13+ is untouched because `block.6` only exists in
+the `#else` branch. `block.properties` is read at game start, so a full restart is required.
