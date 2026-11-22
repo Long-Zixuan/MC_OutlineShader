@@ -93,14 +93,14 @@ float screenDepth2LinearDepth(float depth)
 
 void main() 
 {
-	gl_FragData[0] = texture(colortex0, texcoord);
-   float depth = texture(depthtex0, texcoord).r;
+	gl_FragData[0] = texture2D(colortex0, texcoord);
+   float depth = texture2D(depthtex0, texcoord).r;
    depth = screenDepth2LinearDepth(depth);
 
-   float depthLeft = texture(depthtex0, vec2(texcoord.x + (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y)).r;
-   float depthRight = texture(depthtex0, vec2(texcoord.x - (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y )).r;
-   float depthUp = texture(depthtex0, vec2(texcoord.x,texcoord.y + (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
-   float depthDown = texture(depthtex0, vec2(texcoord.x,texcoord.y - (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+   float depthLeft = texture2D(depthtex0, vec2(texcoord.x + (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y)).r;
+   float depthRight = texture2D(depthtex0, vec2(texcoord.x - (RIM_OFFECT / viewWidth) * SCREEN_VALUE ,texcoord.y )).r;
+   float depthUp = texture2D(depthtex0, vec2(texcoord.x,texcoord.y + (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
+   float depthDown = texture2D(depthtex0, vec2(texcoord.x,texcoord.y - (RIM_OFFECT / viewHeight) * SCREEN_VALUE )).r;
 
    depthLeft = screenDepth2LinearDepth(depthLeft);
    depthRight = screenDepth2LinearDepth(depthRight);
@@ -123,7 +123,7 @@ void main()
 
    if(rimIntensity == 1)
    {
-      gl_FragData[0] = texture(colortex0, texcoord) * outlineCol;
+      gl_FragData[0] = texture2D(colortex0, texcoord) * outlineCol;
       return;
    }
 

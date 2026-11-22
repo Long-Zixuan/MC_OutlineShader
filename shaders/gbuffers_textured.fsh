@@ -127,9 +127,9 @@ const vec2 offsets[64] = vec2[64](
 // PCF shadow sampling function
 float sPCF(sampler2D sTex, vec3 sSPos, float bRad){
     float sMap = 0.0;
-    float bNoise = texture(noisetex, gl_FragCoord.xy / vec2(noiseTextureResolution)).r;
+    float bNoise = texture2D(noisetex, gl_FragCoord.xy / vec2(noiseTextureResolution)).r;
     for(int i = 0; i < PCF_SAMPLE; i++){
-        sMap += step(sSPos.z, texture(sTex, sSPos.xy + (rot2D(bNoise * 6.28318531) * offsets[i] * bRad)).r);
+        sMap += step(sSPos.z, texture2D(sTex, sSPos.xy + (rot2D(bNoise * 6.28318531) * offsets[i] * bRad)).r);
     }
     return sMap / PCF_SAMPLE;
 }
@@ -391,8 +391,8 @@ void main()
 					float sMap0 = sPCF(shadowtex0, sSPos, bRad);
 					float sMap1 = sPCF(shadowtex1, sSPos, bRad);
 				#else
-					float sMap0 = step(sSPos.z, texture(shadowtex0, sSPos.xy).r);
-					float sMap1 = step(sSPos.z, texture(shadowtex1, sSPos.xy).r);
+					float sMap0 = step(sSPos.z, texture2D(shadowtex0, sSPos.xy).r);
+					float sMap1 = step(sSPos.z, texture2D(shadowtex1, sSPos.xy).r);
 				#endif
 
 				#if COLORED_SHADOWS == 1
