@@ -1,29 +1,32 @@
 ﻿{
     "format_version":  2,
     "header":  {
-                   "name":  "Outline Shader (BRD)",
-                   "description":  "NPR outline shader - Better RenderDragon port",
-                   "uuid":  "001b716d-c252-4e7d-99a8-14fad895e067",
-                   "version":  [
-                                   1,
-                                   0,
-                                   0
-                               ],
-                   "min_engine_version":  [
-                                              1,
-                                              20,
-                                              15
-                                          ]
-               },
+        "name":  "Outline Shader (BRD)",
+        "description":  "NPR outline shader - Better RenderDragon port\nBy LoongLy",
+        "uuid":  "41cebafd-e546-495b-ad71-2a7a9caa41d9",
+        "version":  [
+            1,
+            0,
+            0
+        ],
+        "min_engine_version":  [
+            1,
+            20,
+            15
+        ]
+    },
     "modules":  [
-                    {
-                        "type":  "resources",
-                        "uuid":  "9f71b3dc-e6f8-4656-a77c-e3d3c5090e83",
-                        "version":  [
-                                        1,
-                                        0,
-                                        0
-                                    ]
-                    }
-                ]
+        {
+            "type":  "resources",
+            "uuid":  "215b6e84-5cba-4ba3-bba2-0bd0acf9961a",
+            "version":  [
+                1,
+                0,
+                0
+            ]
+        }
+    ],
+    "metadata": {
+        "authors": ["LoongLy"]
+    }
 }
