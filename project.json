@@ -1,0 +1,9 @@
+{
+  "base_profile": {
+    "platforms": ["Direct3D_SM40", "Direct3D_SM50"],
+    "merge_source": ["vanilla/"],
+    "include_patterns": ["*"],
+    "exclude_patterns": [".*", "_*", "build", "env", "data", "vanilla", "include", "materials", "pack"],
+    "include_search_paths": ["include"]
+  }
+}

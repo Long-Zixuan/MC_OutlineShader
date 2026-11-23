@@ -1,0 +1,29 @@
+﻿{
+    "format_version":  2,
+    "header":  {
+                   "name":  "Outline Shader (BRD)",
+                   "description":  "NPR outline shader - Better RenderDragon port",
+                   "uuid":  "b8f80f31-70c8-4834-a1f1-c175c2e32005",
+                   "version":  [
+                                   1,
+                                   0,
+                                   0
+                               ],
+                   "min_engine_version":  [
+                                              1,
+                                              20,
+                                              15
+                                          ]
+               },
+    "modules":  [
+                    {
+                        "type":  "resources",
+                        "uuid":  "1f4d66de-c6b7-4aa8-b68e-5d2aab57a9dd",
+                        "version":  [
+                                        1,
+                                        0,
+                                        0
+                                    ]
+                    }
+                ]
+}
