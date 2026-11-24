@@ -13,6 +13,9 @@ $materials = Join-Path $pack 'renderer\materials'
 
 New-Item -ItemType Directory -Force -Path $materials | Out-Null
 
+# remove stale compiled materials so the pack matches build/ exactly
+Remove-Item (Join-Path $materials '*.material.bin') -Force -ErrorAction SilentlyContinue
+
 # --- refresh compiled materials from build/ --------------------------------
 $count = 0
 Get-ChildItem -File (Join-Path $be 'build\*.material.bin') -ErrorAction SilentlyContinue | ForEach-Object {
