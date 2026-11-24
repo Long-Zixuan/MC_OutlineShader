@@ -5,7 +5,7 @@
         "description":  "NPR outline shader - Better RenderDragon port\nBy LoongLy",
         "uuid":  "41cebafd-e546-495b-ad71-2a7a9caa41d9",
         "version":  [
-            2,
+            3,
             0,
             0
         ],
@@ -20,7 +20,7 @@
             "type":  "resources",
             "uuid":  "215b6e84-5cba-4ba3-bba2-0bd0acf9961a",
             "version":  [
-                2,
+                3,
                 0,
                 0
             ]
