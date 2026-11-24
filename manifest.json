@@ -1,0 +1,20 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Outline Shader For BE \nBy LoongLy",
+    "description": "Depth-based post-process outline test",
+    "uuid": "8a1f3c52-6b47-4d19-9e83-2f5b7c4a1d06",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 16, 100]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "b7d2e941-3c58-4f6a-8d17-5e9a0c2b6f43",
+      "version": [1, 0, 0]
+    }
+  ],
+  "authors": [
+    "LoongLy"
+  ]
+}
