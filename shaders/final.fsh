@@ -57,21 +57,34 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rampValue = 0.0001;
    if(LINEAR_DEPTH == ON)
    {
-      //通过深度求导重建视图空间法线，再与摄像机向量求夹角
-      float rawDepth = texture(depthtex0, texcoord).r;
-      vec4 ndcPos = vec4(texcoord * 2.0 - 1.0, rawDepth * 2.0 - 1.0, 1.0);
-      vec4 viewPos4 = gbufferProjectionInverse * ndcPos;
-      vec3 viewPos = viewPos4.xyz / viewPos4.w;
-      vec3 viewNormal = normalize(cross(dFdx(viewPos), dFdy(viewPos)));
-      vec3 viewDir = normalize(viewPos);                              //摄像机(视图空间原点)指向片元
-      float facing = clamp(abs(dot(viewNormal, viewDir)), 0.0, 1.0);  //法线与摄像机向量夹角的余弦
-      float angleRatio = 1.0 - facing;                                //夹角越大 -> 越大
-      rampValue = pow(max(angleRatio, 0.0) * LinearDepthMultiplier, LinearDepthBias);
+      //距离斜坡(原逻辑保留): 越远 rampValue 越高, 越难被判成边缘
+      rampValue = pow((1.0 - depth) * LinearDepthMultiplier, LinearDepthBias);
    }
    //rampValue = rampValue * (1 + depth * 1);
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
 
-   return min(rimIntensity,isRamp);
+   //================= 斜面 / 边缘 判别(二阶射影仿射残差) =================
+   //透视投影下, 平面在屏幕空间严格满足「1/z 对像素坐标是仿射函数」。
+   //所以对 1/z 取二阶差分: 平面(任意朝向、任意视线夹角)恒为 0, 边缘处才等于跳变量级。
+   //一阶信息做不到这件事 —— 法线夹角、深度一阶差分和平面朝向共用同一组自由度,
+   //陡斜面和浅边缘在数学上可以互相伪装, 所以那一版判据必然失效。
+   //w 的取法:
+   //  LINEAR_DEPTH = ON : 传入的 depth 是线性深度 1 - d/far, 取倒数还原 1/z;
+   //  LINEAR_DEPTH = OFF: 传入的 depth 是窗口深度, 窗口深度本身与 1/z 成仿射, 直接使用;
+   //  若 FALLOFF_CURVE != 0, depth 已被该曲线重映射, 需要先反解曲线再代入。
+   //注: 两个面相交的折棱(法线不连续)也会被判成边缘; 若要把折棱和遮挡轮廓分开,
+   //    需再用 h 与 2h 两个尺度比较残差随 h 的幂次(常数=遮挡边, 正比于 h=折棱)。
+   float wC = (LINEAR_DEPTH == ON) ? 1.0 / max(1.0 - depth     , 1e-5) : depth;
+   float w1 = (LINEAR_DEPTH == ON) ? 1.0 / max(1.0 - depthOft1 , 1e-5) : depthOft1;
+   float w2 = (LINEAR_DEPTH == ON) ? 1.0 / max(1.0 - depthOft2 , 1e-5) : depthOft2;
+
+   float edgeResidual = w1 + w2 - 2.0 * wC;                       //二阶差分: 斜面上精确为 0
+   float edgeDenom = abs(w1 - wC) + abs(wC - w2) + abs(wC) * 1e-4; //相对下限, 压住深度量化噪声, 避免 0/0
+   float edgeRatio = abs(edgeResidual) / edgeDenom;                //无量纲: 斜面 -> 0, 遮挡边 -> 约 1
+   float isEdge = step(0.5, edgeRatio);                            //0 = 斜面(不画线), 1 = 真边缘(画线)
+
+   //两条判据同时成立才画线: 原幅度/距离门限 AND 新的斜面剔除
+   return min(rimIntensity,isRamp) * isEdge;
 }
 
 float screenSpaceToViewSpace(float depth, mat4 projInv) {
