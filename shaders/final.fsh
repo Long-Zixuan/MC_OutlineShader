@@ -20,8 +20,8 @@
 #define SCREEN_VALUE 2000
 
 //LINEAR DEPTH
-#define LinearDepthMultiplier 0.001
-#define LinearDepthBias 0.7 
+#define LinearDepthMultiplier 0.001 // [0.0001 0.0002 0.0005 0.001 0.002 0.003 0.004 0.005 0.01 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.1 3.2 3.3 3]
+#define LinearDepthBias 0.7  // [0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1]
 uniform float far;
 uniform sampler2D depthtex0;
 
@@ -57,7 +57,16 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rampValue = 0.0001;
    if(LINEAR_DEPTH == ON)
    {
-      rampValue = pow((1 - depth) * LinearDepthMultiplier, LinearDepthBias);
+      //通过深度求导重建视图空间法线，再与摄像机向量求夹角
+      float rawDepth = texture(depthtex0, texcoord).r;
+      vec4 ndcPos = vec4(texcoord * 2.0 - 1.0, rawDepth * 2.0 - 1.0, 1.0);
+      vec4 viewPos4 = gbufferProjectionInverse * ndcPos;
+      vec3 viewPos = viewPos4.xyz / viewPos4.w;
+      vec3 viewNormal = normalize(cross(dFdx(viewPos), dFdy(viewPos)));
+      vec3 viewDir = normalize(viewPos);                              //摄像机(视图空间原点)指向片元
+      float facing = clamp(abs(dot(viewNormal, viewDir)), 0.0, 1.0);  //法线与摄像机向量夹角的余弦
+      float angleRatio = 1.0 - facing;                                //夹角越大 -> 越大
+      rampValue = pow(max(angleRatio, 0.0) * LinearDepthMultiplier, LinearDepthBias);
    }
    //rampValue = rampValue * (1 + depth * 1);
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
