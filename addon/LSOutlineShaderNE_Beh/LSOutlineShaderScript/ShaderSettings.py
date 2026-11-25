@@ -116,7 +116,7 @@ CONTROLS = [
      "default": False},
 
     {"kind": "toggle", "key": "LINEAR_DEPTH", "label": u"线性深度",
-     "default": False},
+     "default": True},
 
     # 纹理描边相关控件从界面隐藏；参数仍保留默认值（默认关闭）。
     # 需要时把 hidden 去掉即可重新显示。
