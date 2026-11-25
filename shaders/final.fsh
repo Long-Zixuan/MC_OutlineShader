@@ -19,6 +19,9 @@
 //#define RAMP_VALUE 0.0001
 #define SCREEN_VALUE 2000
 
+//LINEAR DEPTH
+#define LinearDepthMultiplier 0.001 // [0.0001 0.0002 0.0005 0.001 0.002 0.003 0.004 0.005 0.01 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.1 3.2 3.3 3]
+#define LinearDepthBias 0.7  // [0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1]
 uniform float far;
 uniform sampler2D depthtex0;
 
@@ -51,6 +54,14 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float rimIntensity1 = step(THRESHOLD,depthDiffer1);
    float rimIntensity2 = step(THRESHOLD,depthDiffer2);
    float rimIntensity = max(rimIntensity1,rimIntensity2);
+   float rampValue = 0.0001;
+   if(LINEAR_DEPTH == ON)
+   {
+      //距离斜坡(原逻辑保留): 越远 rampValue 越高, 越难被判成边缘
+      rampValue = pow((1.0 - depth) * LinearDepthMultiplier, LinearDepthBias);
+   }
+   //rampValue = rampValue * (1 + depth * 1);
+   float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
 
    //================= 斜面 / 边缘 判别(二阶射影仿射残差) =================
    //透视投影下, 平面在屏幕空间严格满足「1/z 对像素坐标是仿射函数」。
@@ -73,7 +84,7 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    float isEdge = step(0.5, edgeRatio);                            //0 = 斜面(不画线), 1 = 真边缘(画线)
 
    //两条判据同时成立才画线: 原幅度/距离门限 AND 新的斜面剔除
-   return min(rimIntensity,isEdge);
+   return min(rimIntensity,isRamp) * isEdge;
 }
 
 float screenSpaceToViewSpace(float depth, mat4 projInv) {
