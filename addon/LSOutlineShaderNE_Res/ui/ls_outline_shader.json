@@ -685,12 +685,12 @@
                                                 1
                                             ],
                                             "font_scale_factor": 0.65,
-                                            "text": "阴影",
+                                            "text": "纹理描边",
                                             "text_alignment": "left"
                                         }
                                     },
                                     {
-                                        "row_ENABLE_SHADOWS": {
+                                        "row_ENABLE_TEXTURE_OUTLINES": {
                                             "type": "stack_panel",
                                             "size": [
                                                 "100%",
@@ -699,7 +699,7 @@
                                             "orientation": "horizontal",
                                             "controls": [
                                                 {
-                                                    "lbl_ENABLE_SHADOWS": {
+                                                    "lbl_ENABLE_TEXTURE_OUTLINES": {
                                                         "type": "label",
                                                         "anchor_from": "left_middle",
                                                         "anchor_to": "left_middle",
@@ -715,12 +715,12 @@
                                                             1
                                                         ],
                                                         "font_scale_factor": 0.65,
-                                                        "text": "启用阴影",
+                                                        "text": "纹理描边 开/关",
                                                         "text_alignment": "left"
                                                     }
                                                 },
                                                 {
-                                                    "toggle_ENABLE_SHADOWS@ls_outline_shader.btn_base": {
+                                                    "toggle_ENABLE_TEXTURE_OUTLINES@ls_outline_shader.btn_base": {
                                                         "$label_scale": 0.65,
                                                         "$label_text": "关",
                                                         "size": [
@@ -733,7 +733,7 @@
                                         }
                                     },
                                     {
-                                        "row_SOFT_SHADOWS": {
+                                        "row_TEXTURE_OUTLINE_COLOR": {
                                             "type": "stack_panel",
                                             "size": [
                                                 "100%",
@@ -742,50 +742,7 @@
                                             "orientation": "horizontal",
                                             "controls": [
                                                 {
-                                                    "lbl_SOFT_SHADOWS": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "62%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1,
-                                                            1,
-                                                            1,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "软阴影",
-                                                        "text_alignment": "left"
-                                                    }
-                                                },
-                                                {
-                                                    "toggle_SOFT_SHADOWS@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "关",
-                                                        "size": [
-                                                            "30%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "row_shadowMapResolution": {
-                                            "type": "stack_panel",
-                                            "size": [
-                                                "100%",
-                                                "5.2%"
-                                            ],
-                                            "orientation": "horizontal",
-                                            "controls": [
-                                                {
-                                                    "lbl_shadowMapResolution": {
+                                                    "lbl_TEXTURE_OUTLINE_COLOR": {
                                                         "type": "label",
                                                         "anchor_from": "left_middle",
                                                         "anchor_to": "left_middle",
@@ -801,12 +758,12 @@
                                                             1
                                                         ],
                                                         "font_scale_factor": 0.65,
-                                                        "text": "阴影分辨率",
+                                                        "text": "纹理描边颜色",
                                                         "text_alignment": "left"
                                                     }
                                                 },
                                                 {
-                                                    "dec_shadowMapResolution@ls_outline_shader.btn_base": {
+                                                    "dec_TEXTURE_OUTLINE_COLOR@ls_outline_shader.btn_base": {
                                                         "$label_scale": 0.65,
                                                         "$label_text": "-",
                                                         "size": [
@@ -816,7 +773,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "val_shadowMapResolution": {
+                                                    "val_TEXTURE_OUTLINE_COLOR": {
                                                         "type": "label",
                                                         "anchor_from": "left_middle",
                                                         "anchor_to": "left_middle",
@@ -837,7 +794,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "inc_shadowMapResolution@ls_outline_shader.btn_base": {
+                                                    "inc_TEXTURE_OUTLINE_COLOR@ls_outline_shader.btn_base": {
                                                         "$label_scale": 0.65,
                                                         "$label_text": "+",
                                                         "size": [
@@ -850,7 +807,7 @@
                                         }
                                     },
                                     {
-                                        "row_SHADOW_DISTANCE": {
+                                        "row_TEXTURE_OUTLINE_STRENGTH": {
                                             "type": "stack_panel",
                                             "size": [
                                                 "100%",
@@ -859,7 +816,7 @@
                                             "orientation": "horizontal",
                                             "controls": [
                                                 {
-                                                    "lbl_SHADOW_DISTANCE": {
+                                                    "lbl_TEXTURE_OUTLINE_STRENGTH": {
                                                         "type": "label",
                                                         "anchor_from": "left_middle",
                                                         "anchor_to": "left_middle",
@@ -875,12 +832,12 @@
                                                             1
                                                         ],
                                                         "font_scale_factor": 0.65,
-                                                        "text": "阴影距离",
+                                                        "text": "纹理描边强度",
                                                         "text_alignment": "left"
                                                     }
                                                 },
                                                 {
-                                                    "dec_SHADOW_DISTANCE@ls_outline_shader.btn_base": {
+                                                    "dec_TEXTURE_OUTLINE_STRENGTH@ls_outline_shader.btn_base": {
                                                         "$label_scale": 0.65,
                                                         "$label_text": "-",
                                                         "size": [
@@ -890,7 +847,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "val_SHADOW_DISTANCE": {
+                                                    "val_TEXTURE_OUTLINE_STRENGTH": {
                                                         "type": "label",
                                                         "anchor_from": "left_middle",
                                                         "anchor_to": "left_middle",
@@ -911,229 +868,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "inc_SHADOW_DISTANCE@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "+",
-                                                        "size": [
-                                                            "10%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "row_SHADOW_BRIGHTNESS": {
-                                            "type": "stack_panel",
-                                            "size": [
-                                                "100%",
-                                                "5.2%"
-                                            ],
-                                            "orientation": "horizontal",
-                                            "controls": [
-                                                {
-                                                    "lbl_SHADOW_BRIGHTNESS": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "42%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1,
-                                                            1,
-                                                            1,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "阴影亮度",
-                                                        "text_alignment": "left"
-                                                    }
-                                                },
-                                                {
-                                                    "dec_SHADOW_BRIGHTNESS@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "-",
-                                                        "size": [
-                                                            "10%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "val_SHADOW_BRIGHTNESS": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "26%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1.0,
-                                                            0.86,
-                                                            0.45,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "0",
-                                                        "text_alignment": "center"
-                                                    }
-                                                },
-                                                {
-                                                    "inc_SHADOW_BRIGHTNESS@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "+",
-                                                        "size": [
-                                                            "10%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "row_BLOCK_LIGHT_INTENSITY": {
-                                            "type": "stack_panel",
-                                            "size": [
-                                                "100%",
-                                                "5.2%"
-                                            ],
-                                            "orientation": "horizontal",
-                                            "controls": [
-                                                {
-                                                    "lbl_BLOCK_LIGHT_INTENSITY": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "42%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1,
-                                                            1,
-                                                            1,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "方块光强度",
-                                                        "text_alignment": "left"
-                                                    }
-                                                },
-                                                {
-                                                    "dec_BLOCK_LIGHT_INTENSITY@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "-",
-                                                        "size": [
-                                                            "10%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "val_BLOCK_LIGHT_INTENSITY": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "26%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1.0,
-                                                            0.86,
-                                                            0.45,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "0",
-                                                        "text_alignment": "center"
-                                                    }
-                                                },
-                                                {
-                                                    "inc_BLOCK_LIGHT_INTENSITY@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "+",
-                                                        "size": [
-                                                            "10%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "row_BLOCK_LIGHT_SHADOW_BOOST": {
-                                            "type": "stack_panel",
-                                            "size": [
-                                                "100%",
-                                                "5.2%"
-                                            ],
-                                            "orientation": "horizontal",
-                                            "controls": [
-                                                {
-                                                    "lbl_BLOCK_LIGHT_SHADOW_BOOST": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "42%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1,
-                                                            1,
-                                                            1,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "方块光增强",
-                                                        "text_alignment": "left"
-                                                    }
-                                                },
-                                                {
-                                                    "dec_BLOCK_LIGHT_SHADOW_BOOST@ls_outline_shader.btn_base": {
-                                                        "$label_scale": 0.65,
-                                                        "$label_text": "-",
-                                                        "size": [
-                                                            "10%",
-                                                            "100%"
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "val_BLOCK_LIGHT_SHADOW_BOOST": {
-                                                        "type": "label",
-                                                        "anchor_from": "left_middle",
-                                                        "anchor_to": "left_middle",
-                                                        "size": [
-                                                            "26%",
-                                                            "100%"
-                                                        ],
-                                                        "layer": 2,
-                                                        "color": [
-                                                            1.0,
-                                                            0.86,
-                                                            0.45,
-                                                            1
-                                                        ],
-                                                        "font_scale_factor": 0.65,
-                                                        "text": "0",
-                                                        "text_alignment": "center"
-                                                    }
-                                                },
-                                                {
-                                                    "inc_BLOCK_LIGHT_SHADOW_BOOST@ls_outline_shader.btn_base": {
+                                                    "inc_TEXTURE_OUTLINE_STRENGTH@ls_outline_shader.btn_base": {
                                                         "$label_scale": 0.65,
                                                         "$label_text": "+",
                                                         "size": [

@@ -32,7 +32,7 @@ LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2; // scene depth
 LAYOUT_BINDING(3) uniform sampler2D TEXTURE_3; // cel_ramp.png (bindTexture)
 
 uniform vec4 EXTRA_VECTOR1; // (THRESHOLD, RIM_OFFECT, OUTLINE_COL, OUTLINE_MODE)
-uniform vec4 EXTRA_VECTOR2; // (LINEAR_DEPTH, ENABLE_TEXTURE_OUTLINES, TEXTURE_OUTLINE_STRENGTH, OUTLINE_THICKNESS)
+uniform vec4 EXTRA_VECTOR2; // (LINEAR_DEPTH, ENABLE_TEXTURE_OUTLINES, TEXTURE_OUTLINE_STRENGTH, TEXTURE_OUTLINE_COLOR)
 uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
 
 #define OFF 0.0
@@ -48,11 +48,14 @@ uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
 #define LINEAR_DEPTH (EXTRA_VECTOR2.x)
 #define ENABLE_TEXTURE_OUTLINES (EXTRA_VECTOR2.y)
 #define TEXTURE_OUTLINE_STRENGTH (EXTRA_VECTOR2.z)
-#define OUTLINE_THICKNESS (EXTRA_VECTOR2.w)
+#define TEXTURE_OUTLINE_COLOR (EXTRA_VECTOR2.w)
 #define CEL (EXTRA_VECTOR3.x)
 #define PAPER_WORLD (EXTRA_VECTOR3.y)
 #define IS_LOW_HEALTH (EXTRA_VECTOR3.z)
 #define IS_SURVIVAL (EXTRA_VECTOR3.w)
+// OUTLINE_THICKNESS is no longer a setting; keep the original default so the
+// texture-outline sampling offset stays identical.
+#define OUTLINE_THICKNESS 1.0
 
 //LINEAR DEPTH
 #define LinearDepthMultiplier 0.001
@@ -267,7 +270,7 @@ void main()
    {
       float textureOutline = getTEXTURETextureOutline(texcoord, finalColor);
       float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
-      finalColor.rgb = mix(finalColor.rgb, vec3(0.05, 0.05, 0.05), outline);
+      finalColor.rgb = mix(finalColor.rgb, vec3(TEXTURE_OUTLINE_COLOR), outline);
    }
 
    // ---- depth outline (final.fsh)

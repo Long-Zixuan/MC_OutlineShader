@@ -7,37 +7,68 @@ precision highp float;
 
 varying vec4 v_color;
 varying vec2 v_uv;
+varying vec2 v_light;
 
 LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1;
 
 // ---------------------------------------------------------------------------
-// Terrain: texture x tint + day/night (fog colour) + binary shadow (COLOR).
+// 纹理描边（移植自原包 gbuffers_textured.fsh 的 getTEXTURETextureOutline，
+// 逻辑未改动；采样源改为地形图集 TEXTURE_0）。
 //
-//   SHADOW_ENABLED         - 1 = on, 0 = off (compile-time)
-//   SHADOW_LIGHT_THRESHOLD - COLOR brightness below this = shadowed
-//   SHADOW_BRIGHTNESS      - shadow darkness (lower = darker)
-//   NIGHT_BRIGHTNESS       - night brightness (0.3 = keep 30%)
+// 注意：地形材质拿不到运行时 uniform，所以下面参数是编译期常量。
 // ---------------------------------------------------------------------------
-const float SHADOW_ENABLED         = 1.0;
-const float SHADOW_LIGHT_THRESHOLD = 0.7;
-const float SHADOW_BRIGHTNESS      = 0.5;
-const float NIGHT_BRIGHTNESS       = 0.3;
+const float ENABLE_TEXTURE_OUTLINES  = 1.0;    // 纹理描边 开/关
+const float TEXTURE_OUTLINE_COLOR    = 0.05;   // 纹理描边颜色（灰度 0~1）
+const float TEXTURE_OUTLINE_STRENGTH = 0.8;    // 纹理描边强度
+const float OUTLINE_THICKNESS        = 1.0;    // 描边粗细
+const float ATLAS_SIZE               = 2048.0; // 图集分辨率（textureSize 的替代）
+
+// 昼夜（FOG_COLOR 亮度近似）
+const float NIGHT_BRIGHTNESS = 0.3;
+
+// 原版纹理描边检测（同 gbuffers_textured.fsh，采样偏移逻辑不变）
+float getTEXTURETextureOutline(vec2 texCoord, vec4 originalColor) {
+    vec2 res = vec2(ATLAS_SIZE);
+    vec2 texelSize = (1.0 / res) * OUTLINE_THICKNESS;
+
+    // Use much smaller sampling - only 1-2 pixels to stay within texture boundaries
+    texelSize *= 0.3;
+
+    vec4 colorRight = texture2D(TEXTURE_0, texCoord + vec2(texelSize.x, 0.0));
+    vec4 colorDown  = texture2D(TEXTURE_0, texCoord + vec2(0.0, texelSize.y));
+    vec4 colorLeft  = texture2D(TEXTURE_0, texCoord - vec2(texelSize.x, 0.0));
+    vec4 colorUp    = texture2D(TEXTURE_0, texCoord - vec2(0.0, texelSize.y));
+
+    float diffRight = length(originalColor.rgb - colorRight.rgb);
+    float diffDown  = length(originalColor.rgb - colorDown.rgb);
+    float diffLeft  = length(originalColor.rgb - colorLeft.rgb);
+    float diffUp    = length(originalColor.rgb - colorUp.rgb);
+
+    float maxDiff = max(max(diffRight, diffDown), max(diffLeft, diffUp));
+
+    return clamp(maxDiff * 4.0, 0.0, 1.0);
+}
 
 void main()
 {
     vec4 tex = texture2D(TEXTURE_0, v_uv);
     vec3 base = tex.rgb * v_color.rgb;
 
-    if (SHADOW_ENABLED > 0.5)
-    {
-        // Day/night from the fog colour (bright day, dark night).
-        float dayNight = dot(FOG_COLOR.rgb, vec3(0.299, 0.587, 0.114));
-        base *= mix(NIGHT_BRIGHTNESS, 1.0, dayNight);
+    // 光照贴图：火把/天空光照（Bedrock 的光照在 TEXTURE_1，经 TEXCOORD_1 取）
+    vec4 lightmap = texture2D(TEXTURE_1, v_light);
+    base *= lightmap.rgb;
 
-        // Binary shadow from the vertex-colour brightness.
-        float light = max(v_color.r, max(v_color.g, v_color.b));
-        float shadow = 1.0 - step(SHADOW_LIGHT_THRESHOLD, light);
-        base *= mix(1.0, SHADOW_BRIGHTNESS, shadow);
+    // 昼夜
+    float dayNight = dot(FOG_COLOR.rgb, vec3(0.299, 0.587, 0.114));
+    base *= mix(NIGHT_BRIGHTNESS, 1.0, dayNight);
+
+    // 纹理描边
+    if (ENABLE_TEXTURE_OUTLINES > 0.5)
+    {
+        float textureOutline = getTEXTURETextureOutline(v_uv, tex);
+        float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
+        base = mix(base, vec3(TEXTURE_OUTLINE_COLOR), outline);
     }
 
     gl_FragColor = vec4(base, tex.a);

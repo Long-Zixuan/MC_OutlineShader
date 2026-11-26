@@ -59,25 +59,9 @@ OUTLINE_MODE_OPTIONS = [1.0, -1.0]           # INSIDE = 1, OUTSIDE = -1
 OUTLINE_MODE_LABELS = ["INSIDE", "OUTSIDE"]
 
 TEXTURE_OUTLINE_STRENGTH_OPTIONS = [0.0, 0.5, 0.8, 1.0, 1.5]
-OUTLINE_THICKNESS_OPTIONS = [0.5, 1.0, 1.5, 2.0, 3.0]
+TEXTURE_OUTLINE_COLOR_OPTIONS = [0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0]
 
 SHININESS_OPTIONS = [0.0, 0.25, 0.5, 0.75, 1.0]
-
-SHADOW_BRIGHTNESS_OPTIONS = [round(0.7 + i * 0.05, 2) for i in range(7)]
-BLOCK_LIGHT_INTENSITY_OPTIONS = [0.0, 0.25, 0.5, 0.75, 0.8, 0.85, 1.0, 1.25, 1.5, 2.0]
-BLOCK_LIGHT_SHADOW_BOOST_OPTIONS = [1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5]
-
-SHADOW_MAP_RESOLUTION_OPTIONS = [512, 1024, 2048, 4096, 8192]
-SHADOW_MAP_RESOLUTION_LABELS = ["512", "1024", "2048", "4096", "8192"]
-
-SHADOW_DISTANCE_OPTIONS = [
-    -1.0, 64.0, 96.0, 128.0, 160.0, 192.0, 224.0, 256.0,
-    288.0, 320.0, 352.0, 384.0, 416.0, 448.0, 480.0, 512.0,
-]
-SHADOW_DISTANCE_LABELS = [
-    "AUTO (-1)", "64", "96", "128", "160", "192", "224", "256",
-    "288", "320", "352", "384", "416", "448", "480", "512",
-]
 
 IS_LOW_HEALTH = False
 IS_SURVIVAL = False
@@ -116,21 +100,18 @@ CONTROLS = [
     {"kind": "toggle", "key": "LINEAR_DEPTH", "label": u"线性深度",
      "default": True},
 
-    # 纹理描边相关控件从界面隐藏；参数仍保留默认值（默认关闭）。
-    # 需要时把 hidden 去掉即可重新显示。
-    {"kind": "text", "key": "sec_texture", "hidden": True,
-     "label": u"纹理描边"},
+    {"kind": "text", "key": "sec_texture", "label": u"纹理描边"},
 
-    {"kind": "toggle", "key": "ENABLE_TEXTURE_OUTLINES", "hidden": True,
-     "label": u"启用纹理描边", "default": False},
+    {"kind": "toggle", "key": "ENABLE_TEXTURE_OUTLINES",
+     "label": u"纹理描边 开/关", "default": False},
 
-    {"kind": "slider", "key": "TEXTURE_OUTLINE_STRENGTH", "hidden": True,
+    {"kind": "slider", "key": "TEXTURE_OUTLINE_COLOR",
+     "label": u"纹理描边颜色",
+     "options": TEXTURE_OUTLINE_COLOR_OPTIONS, "default": 1},
+
+    {"kind": "slider", "key": "TEXTURE_OUTLINE_STRENGTH",
      "label": u"纹理描边强度",
      "options": TEXTURE_OUTLINE_STRENGTH_OPTIONS, "default": 2},
-
-    {"kind": "slider", "key": "OUTLINE_THICKNESS", "hidden": True,
-     "label": u"描边粗细",
-     "options": OUTLINE_THICKNESS_OPTIONS, "default": 0},
 
     {"kind": "text", "key": "sec_style", "label": u"风格"},
 
@@ -141,29 +122,6 @@ CONTROLS = [
 
     {"kind": "slider", "key": "Shininess", "label": u"水面高光",
      "options": SHININESS_OPTIONS, "default": 0},
-
-    {"kind": "text", "key": "sec_shadow", "label": u"阴影"},
-
-    {"kind": "toggle", "key": "ENABLE_SHADOWS", "label": u"启用阴影",
-     "default": False},
-
-    {"kind": "toggle", "key": "SOFT_SHADOWS", "label": u"软阴影",
-     "default": True},
-
-    {"kind": "slider", "key": "shadowMapResolution", "label": u"阴影分辨率",
-     "options": SHADOW_MAP_RESOLUTION_OPTIONS, "default": 1},
-
-    {"kind": "slider", "key": "SHADOW_DISTANCE", "label": u"阴影距离",
-     "options": SHADOW_DISTANCE_OPTIONS, "default": 0},
-
-    {"kind": "slider", "key": "SHADOW_BRIGHTNESS", "label": u"阴影亮度",
-     "options": SHADOW_BRIGHTNESS_OPTIONS, "default": 3},
-
-    {"kind": "slider", "key": "BLOCK_LIGHT_INTENSITY", "label": u"方块光强度",
-     "options": BLOCK_LIGHT_INTENSITY_OPTIONS, "default": 4},
-
-    {"kind": "slider", "key": "BLOCK_LIGHT_SHADOW_BOOST", "label": u"方块光增强",
-     "options": BLOCK_LIGHT_SHADOW_BOOST_OPTIONS, "default": 2},
 
     {"kind": "text", "key": "footer_brand", "label": u"LoongLy Software 2026"},
 ]
@@ -193,14 +151,10 @@ UI_ROWS = [
     ("toggle", "CEL"),
     ("toggle", "PAPER_WORLD"),
     ("number", "Shininess"),
-    ("header", u"阴影"),
-    ("toggle", "ENABLE_SHADOWS"),
-    ("toggle", "SOFT_SHADOWS"),
-    ("number", "shadowMapResolution"),
-    ("number", "SHADOW_DISTANCE"),
-    ("number", "SHADOW_BRIGHTNESS"),
-    ("number", "BLOCK_LIGHT_INTENSITY"),
-    ("number", "BLOCK_LIGHT_SHADOW_BOOST"),
+    ("header", u"纹理描边"),
+    ("toggle", "ENABLE_TEXTURE_OUTLINES"),
+    ("number", "TEXTURE_OUTLINE_COLOR"),
+    ("number", "TEXTURE_OUTLINE_STRENGTH"),
 ]
 
 UI_NUMBER_KEYS = [key for kind, key in UI_ROWS if kind == "number"]
@@ -209,14 +163,6 @@ UI_TOGGLE_KEYS = [key for kind, key in UI_ROWS if kind == "toggle"]
 
 def format_value(key, value):
     """Human-readable value for the custom UI labels."""
-    if key == "shadowMapResolution":
-        return str(int(value))
-    if key == "SHADOW_DISTANCE":
-        return u"自动" if value < 0 else str(int(value))
-    if key in ("SHADOW_BRIGHTNESS", "BLOCK_LIGHT_INTENSITY",
-               "BLOCK_LIGHT_SHADOW_BOOST", "Shininess"):
-        text = "%.2f" % value
-        return text.rstrip("0").rstrip(".")
     if key == "OUTLINE_COL":
         return ("%.1f" % value).rstrip("0").rstrip(".")
     if abs(value) < 1.0:
@@ -301,8 +247,8 @@ def outline_params(values):
         1.0 if bool_value(values["ENABLE_TEXTURE_OUTLINES"]) else 0.0,
         float(option_value(CONTROL_MAP["TEXTURE_OUTLINE_STRENGTH"],
                            values["TEXTURE_OUTLINE_STRENGTH"])),
-        float(option_value(CONTROL_MAP["OUTLINE_THICKNESS"],
-                           values["OUTLINE_THICKNESS"])),
+        float(option_value(CONTROL_MAP["TEXTURE_OUTLINE_COLOR"],
+                           values["TEXTURE_OUTLINE_COLOR"])),
     ]
     vector3 = [
         1.0 if bool_value(values["CEL"]) else 0.0,
