@@ -1,5 +1,8 @@
 [
   {
     "path": "materials/postprocess.material"
+  },
+  {
+    "path": "materials/terrain.material"
   }
 ]

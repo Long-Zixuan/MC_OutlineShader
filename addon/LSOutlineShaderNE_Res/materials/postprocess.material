@@ -498,38 +498,5 @@
             "DisableDepthTest"
         ],
         "msaaSupport": "Both"
-    },
-    "ls_outline_shader_ne_shadow": {
-        "vertexShader": "shaders/uv_fullscreen.vertex",
-        "fragmentShader": "shaders/ls_shadow_shader_ne.fragment",
-        "vertexFields": [
-            {
-                "field": "Position"
-            },
-            {
-                "field": "UV0"
-            }
-        ],
-        "samplerStates": [
-            {
-                "samplerIndex": 0,
-                "textureWrap": "Clamp",
-                "textureFilter": "Bilinear"
-            },
-            {
-                "samplerIndex": 1,
-                "textureWrap": "Clamp",
-                "textureFilter": "Bilinear"
-            },
-            {
-                "samplerIndex": 2,
-                "textureWrap": "Clamp",
-                "textureFilter": "Point"
-            }
-        ],
-        "states": [
-            "DisableDepthTest"
-        ],
-        "msaaSupport": "Both"
     }
 }

@@ -1,0 +1,44 @@
+// __multiversion__
+precision highp float;
+#include "fragmentVersionCentroid.h"
+#include "uniformPerFrameConstants.h"
+#include "uniformWorldConstants.h"
+#include "uniformShaderConstants.h"
+
+varying vec4 v_color;
+varying vec2 v_uv;
+
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+
+// ---------------------------------------------------------------------------
+// Terrain: texture x tint + day/night (fog colour) + binary shadow (COLOR).
+//
+//   SHADOW_ENABLED         - 1 = on, 0 = off (compile-time)
+//   SHADOW_LIGHT_THRESHOLD - COLOR brightness below this = shadowed
+//   SHADOW_BRIGHTNESS      - shadow darkness (lower = darker)
+//   NIGHT_BRIGHTNESS       - night brightness (0.3 = keep 30%)
+// ---------------------------------------------------------------------------
+const float SHADOW_ENABLED         = 1.0;
+const float SHADOW_LIGHT_THRESHOLD = 0.7;
+const float SHADOW_BRIGHTNESS      = 0.5;
+const float NIGHT_BRIGHTNESS       = 0.3;
+
+void main()
+{
+    vec4 tex = texture2D(TEXTURE_0, v_uv);
+    vec3 base = tex.rgb * v_color.rgb;
+
+    if (SHADOW_ENABLED > 0.5)
+    {
+        // Day/night from the fog colour (bright day, dark night).
+        float dayNight = dot(FOG_COLOR.rgb, vec3(0.299, 0.587, 0.114));
+        base *= mix(NIGHT_BRIGHTNESS, 1.0, dayNight);
+
+        // Binary shadow from the vertex-colour brightness.
+        float light = max(v_color.r, max(v_color.g, v_color.b));
+        float shadow = 1.0 - step(SHADOW_LIGHT_THRESHOLD, light);
+        base *= mix(1.0, SHADOW_BRIGHTNESS, shadow);
+    }
+
+    gl_FragColor = vec4(base, tex.a);
+}

@@ -44,11 +44,9 @@ CFG_NAME = "ls_outline_shader_ne_settings_v1"
 
 # Post-process effect names (also used by the Python PostProcess component)
 PROCESS_OUTLINE = "ls_outline_shader_ne_outline"
-PROCESS_SHADOW = "ls_outline_shader_ne_shadow"
 
 # Materials declared in addon/LSOutlineShaderNE_Res/materials/postprocess.material
 MATERIAL_OUTLINE = "ls_outline_shader_ne_outline"
-MATERIAL_SHADOW = "ls_outline_shader_ne_shadow"
 CEL_RAMP_TEXTURE = "textures/ls_outline_shader/cel_ramp"
 
 # ---------------------------------------------------------------------------
@@ -315,26 +313,6 @@ def outline_params(values):
     return vector1, vector2, vector3
 
 
-def shadow_params(values):
-    """EXTRA_VECTOR1..2 for ls_shadow_shader_ne.fragment."""
-    vector1 = [
-        1.0 if bool_value(values["ENABLE_SHADOWS"]) else 0.0,
-        float(option_value(CONTROL_MAP["SHADOW_BRIGHTNESS"], values["SHADOW_BRIGHTNESS"])),
-        float(option_value(CONTROL_MAP["SHADOW_DISTANCE"], values["SHADOW_DISTANCE"])),
-        1.0 if bool_value(values["SOFT_SHADOWS"]) else 0.0,
-    ]
-    vector2 = [
-        float(option_value(CONTROL_MAP["shadowMapResolution"],
-                           values["shadowMapResolution"])),
-        float(option_value(CONTROL_MAP["BLOCK_LIGHT_INTENSITY"],
-                           values["BLOCK_LIGHT_INTENSITY"])),
-        float(option_value(CONTROL_MAP["BLOCK_LIGHT_SHADOW_BOOST"],
-                           values["BLOCK_LIGHT_SHADOW_BOOST"])),
-        float(option_value(CONTROL_MAP["Shininess"], values["Shininess"])),
-    ]
-    return vector1, vector2
-
-
 def build_outline_process(values):
     vector1, vector2, vector3 = outline_params(values)
     return {
@@ -353,25 +331,6 @@ def build_outline_process(values):
                 "bindTexture": [
                     {"texture": CEL_RAMP_TEXTURE},
                 ],
-            }
-        ],
-    }
-
-
-def build_shadow_process(values):
-    vector1, vector2 = shadow_params(values)
-    return {
-        "name": PROCESS_SHADOW,
-        "enable": True,
-        "paras": [
-            {"name": "p_shadow_a", "value": vector1, "range": [-1.0, 8192.0]},
-            {"name": "p_shadow_b", "value": vector2, "range": [0.0, 8192.0]},
-        ],
-        "pass_array": [
-            {
-                "render_target": {"width": 1.0, "height": 1.0},
-                "material": MATERIAL_SHADOW,
-                "depth_enable": True,
             }
         ],
     }

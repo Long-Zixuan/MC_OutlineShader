@@ -1,0 +1,19 @@
+// __multiversion__
+#include "vertexVersionCentroid.h"
+#include "uniformWorldConstants.h"
+#include "uniformRenderChunkConstants.h"
+
+attribute vec3 POSITION;
+attribute vec4 COLOR;
+attribute vec2 TEXCOORD_0;
+
+varying vec4 v_color;
+varying vec2 v_uv;
+
+void main()
+{
+    vec3 worldPos = POSITION.xyz * CHUNK_ORIGIN_AND_SCALE.w + CHUNK_ORIGIN_AND_SCALE.xyz;
+    v_color = COLOR;
+    v_uv = TEXCOORD_0;
+    gl_Position = PROJ * WORLDVIEW * vec4(worldPos, 1.0);
+}

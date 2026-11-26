@@ -1,0 +1,10 @@
+{
+    "terrain_opaque": {
+        "vertexShader": "shaders/ls_terrain_shadow_ne.vertex",
+        "fragmentShader": "shaders/ls_terrain_shadow_ne.fragment"
+    },
+    "terrain_far": {
+        "vertexShader": "shaders/ls_terrain_shadow_ne.vertex",
+        "fragmentShader": "shaders/ls_terrain_shadow_ne.fragment"
+    }
+}

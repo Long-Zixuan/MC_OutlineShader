@@ -322,16 +322,6 @@ class LSOutlineShaderNEClient(ClientSystem):
             self._post_logged = True
             print("[LSOutlineShaderNE] post-process order: %s" % (order,))
 
-        if S.PROCESS_SHADOW not in order:
-            ok = False
-            try:
-                ok = post.AddPostProcess(S.build_shadow_process(self._values), -1)
-            except Exception as exc:
-                print("[LSOutlineShaderNE] AddPostProcess(shadow) failed: %s" % exc)
-            if S.PROCESS_SHADOW not in self._add_logged:
-                self._add_logged.add(S.PROCESS_SHADOW)
-                print("[LSOutlineShaderNE] AddPostProcess(shadow) -> %s" % ok)
-
         if S.PROCESS_OUTLINE not in order:
             ok = False
             try:
@@ -354,13 +344,11 @@ class LSOutlineShaderNEClient(ClientSystem):
 
         values = self._values
         outline_a, outline_b, outline_c = S.outline_params(values)
-        shadow_a, shadow_b = S.shadow_params(values)
 
-        # Make sure both effects are enabled while writing parameters: some
+        # Make sure the effect is enabled while writing parameters: some
         # builds reject SetParameter on a switched-off custom post-process.
         try:
             post.SetEnableByName(S.PROCESS_OUTLINE, True)
-            post.SetEnableByName(S.PROCESS_SHADOW, True)
         except Exception:
             pass
 
@@ -369,8 +357,6 @@ class LSOutlineShaderNEClient(ClientSystem):
             ok = post.SetParameter(S.PROCESS_OUTLINE, "p_outline_a", outline_a) and ok
             ok = post.SetParameter(S.PROCESS_OUTLINE, "p_outline_b", outline_b) and ok
             ok = post.SetParameter(S.PROCESS_OUTLINE, "p_outline_c", outline_c) and ok
-            ok = post.SetParameter(S.PROCESS_SHADOW, "p_shadow_a", shadow_a) and ok
-            ok = post.SetParameter(S.PROCESS_SHADOW, "p_shadow_b", shadow_b) and ok
         except Exception as exc:
             print("[LSOutlineShaderNE] SetParameter failed: %s" % exc)
             ok = False
@@ -386,13 +372,8 @@ class LSOutlineShaderNEClient(ClientSystem):
             print("[LSOutlineShaderNE] post-process parameters applied")
 
         master = S.bool_value(values.get("MASTER", True))
-        shadow_wanted = master and (
-            S.bool_value(values.get("ENABLE_SHADOWS", False)) or
-            S.option_value(S.CONTROL_MAP["Shininess"], values.get("Shininess", 0)) > 0.0
-        )
         try:
             post.SetEnableByName(S.PROCESS_OUTLINE, master)
-            post.SetEnableByName(S.PROCESS_SHADOW, shadow_wanted)
         except Exception as exc:
             print("[LSOutlineShaderNE] SetEnableByName failed: %s" % exc)
 
