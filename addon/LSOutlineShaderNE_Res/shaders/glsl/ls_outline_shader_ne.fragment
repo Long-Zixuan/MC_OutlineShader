@@ -6,8 +6,7 @@ precision highp float;
 //
 // The outline algorithm below is the original code, unchanged:
 //   getRimIntensity(), screenSpaceToViewSpace(), screenDepth2LinearDepth(),
-//   the four RIM_OFFECT depth taps, OUTLINE_MODE, SCREEN_VALUE, PAPER_WORLD,
-//   the screen-space texture-outline function and its "mix(vec3(0.05))" line.
+//   the four RIM_OFFECT depth taps, OUTLINE_MODE, SCREEN_VALUE, PAPER_WORLD.
 //
 // Only the engine interface was adapted (nothing in the maths was rewritten):
 //   colortex0                -> TEXTURE_0   (post-process colour buffer)
@@ -32,7 +31,7 @@ LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2; // scene depth
 LAYOUT_BINDING(3) uniform sampler2D TEXTURE_3; // cel_ramp.png (bindTexture)
 
 uniform vec4 EXTRA_VECTOR1; // (THRESHOLD, RIM_OFFECT, OUTLINE_COL, OUTLINE_MODE)
-uniform vec4 EXTRA_VECTOR2; // (LINEAR_DEPTH, ENABLE_TEXTURE_OUTLINES, TEXTURE_OUTLINE_STRENGTH, TEXTURE_OUTLINE_COLOR)
+uniform vec4 EXTRA_VECTOR2; // (LINEAR_DEPTH, unused, unused, unused)
 uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
 
 #define OFF 0.0
@@ -46,20 +45,14 @@ uniform vec4 EXTRA_VECTOR3; // (CEL, PAPER_WORLD, reserved, reserved)
 #define OUTLINE_COL (EXTRA_VECTOR1.z)
 #define OUTLINE_MODE (EXTRA_VECTOR1.w)
 #define LINEAR_DEPTH (EXTRA_VECTOR2.x)
-#define ENABLE_TEXTURE_OUTLINES (EXTRA_VECTOR2.y)
-#define TEXTURE_OUTLINE_STRENGTH (EXTRA_VECTOR2.z)
-#define TEXTURE_OUTLINE_COLOR (EXTRA_VECTOR2.w)
 #define CEL (EXTRA_VECTOR3.x)
 #define PAPER_WORLD (EXTRA_VECTOR3.y)
 #define IS_LOW_HEALTH (EXTRA_VECTOR3.z)
 #define IS_SURVIVAL (EXTRA_VECTOR3.w)
-// OUTLINE_THICKNESS is no longer a setting; keep the original default so the
-// texture-outline sampling offset stays identical.
-#define OUTLINE_THICKNESS 1.0
 
 //LINEAR DEPTH
 #define LinearDepthMultiplier 0.001
-#define LinearDepthBias 0.7 
+#define LinearDepthBias 0.7
 
 #define SCREEN_VALUE 2000.0
 #define far (max(FAR_CHUNKS_DISTANCE, 16.0))
@@ -100,7 +93,6 @@ float getRimIntensity(float depthOft1,float depthOft2,float depth)
    //rampValue = rampValue * (1 + depth * 1);
    float isRamp = step(rampValue,abs(depthDiffer1+depthDiffer2));
 
-   
    //================= 斜面 / 边缘 判别(二阶射影仿射残差) =================
    //透视投影下, 平面在屏幕空间严格满足「1/z 对像素坐标是仿射函数」。
    //所以对 1/z 取二阶差分: 平面(任意朝向、任意视线夹角)恒为 0, 边缘处才等于跳变量级。
@@ -142,7 +134,7 @@ float screenDepth2LinearDepth(float depth)
    if(p != 0.0)
    {
       linearDepth = (exp(p * (linearDepth / actualMaxDistance)) - 1.0) / (exp(p) - 1.0);
-   } else 
+   } else
    {
       linearDepth /= actualMaxDistance;
    }
@@ -177,34 +169,7 @@ float sampleCelRamp(float luma)
    return 1.0;
 }
 
-// Original texture-outline detection (same body, sampler now the scene buffer,
-// resolution now the screen size instead of textureSize(texture, 0)).
-float getTEXTURETextureOutline(vec2 texCoord, vec4 originalColor) {
-    vec2 res = max(g_screenSize, vec2(1.0));
-    vec2 texelSize = (1.0 / res) * OUTLINE_THICKNESS;
-    
-    // Use much smaller sampling - only 1-2 pixels to stay within texture boundaries
-    texelSize *= 0.3;
-    
-    // Sample surrounding pixels
-    vec4 colorRight = texture2D(TEXTURE_0, texCoord + vec2(texelSize.x, 0.0));
-    vec4 colorDown = texture2D(TEXTURE_0, texCoord + vec2(0.0, texelSize.y));
-    vec4 colorLeft = texture2D(TEXTURE_0, texCoord - vec2(texelSize.x, 0.0));
-    vec4 colorUp = texture2D(TEXTURE_0, texCoord - vec2(0.0, texelSize.y));
-    
-    // Calculate color differences
-    float diffRight = length(originalColor.rgb - colorRight.rgb);
-    float diffDown = length(originalColor.rgb - colorDown.rgb);
-    float diffLeft = length(originalColor.rgb - colorLeft.rgb);
-    float diffUp = length(originalColor.rgb - colorUp.rgb);
-    
-    float maxDiff = max(max(diffRight, diffDown), max(diffLeft, diffUp));
-    
-    // Make it dramatic but keep the smooth gradations
-    return clamp(maxDiff * 4.0, 0.0, 1.0);
-}
-
-void main() 
+void main()
 {
    // The inverse is only needed by the LINEAR_DEPTH branch; with the default
    // OFF the original code never reads gbufferProjectionInverse.
@@ -265,14 +230,6 @@ void main()
       finalColor.rgb *= mix(1.0, celRamp / 0.6, 0.85);
    }
 
-   // ---- ENABLE_TEXTURE_OUTLINES (same strength / mix as gbuffers_textured.fsh)
-   if(ENABLE_TEXTURE_OUTLINES == ON)
-   {
-      float textureOutline = getTEXTURETextureOutline(texcoord, finalColor);
-      float outline = textureOutline * TEXTURE_OUTLINE_STRENGTH;
-      finalColor.rgb = mix(finalColor.rgb, vec3(TEXTURE_OUTLINE_COLOR), outline);
-   }
-
    // ---- depth outline (final.fsh)
    if(rimIntensity >= 0.5)
    {
@@ -285,8 +242,7 @@ void main()
 // =============================================================================
 // Original file ended with:
 //   if(rimIntensity == 1) { gl_FragData[0] = texture(colortex0, texcoord) * outlineCol; return; }
-// That early-out is reproduced above as the final multiply; the texture-outline
-// and PAPER_WORLD steps are applied first, exactly like gbuffers + final.fsh.
+// That early-out is reproduced above as the final multiply.
 // LZX vscode 2025/03/24
 // ||||--==||||||||||||||------------==||||||--==||||----==||
 // ||||--==|||||||||||||------==||||||||||||--------==||||

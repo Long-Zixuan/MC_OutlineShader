@@ -58,9 +58,6 @@ OUTLINE_COL_OPTIONS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 OUTLINE_MODE_OPTIONS = [1.0, -1.0]           # INSIDE = 1, OUTSIDE = -1
 OUTLINE_MODE_LABELS = ["INSIDE", "OUTSIDE"]
 
-TEXTURE_OUTLINE_STRENGTH_OPTIONS = [0.0, 0.5, 0.8, 1.0, 1.5]
-TEXTURE_OUTLINE_COLOR_OPTIONS = [0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0]
-
 SHININESS_OPTIONS = [0.0, 0.25, 0.5, 0.75, 1.0]
 
 IS_LOW_HEALTH = False
@@ -100,19 +97,6 @@ CONTROLS = [
     {"kind": "toggle", "key": "LINEAR_DEPTH", "label": u"线性深度",
      "default": True},
 
-    {"kind": "text", "key": "sec_texture", "label": u"纹理描边"},
-
-    {"kind": "toggle", "key": "ENABLE_TEXTURE_OUTLINES",
-     "label": u"纹理描边 开/关", "default": False},
-
-    {"kind": "slider", "key": "TEXTURE_OUTLINE_COLOR",
-     "label": u"纹理描边颜色",
-     "options": TEXTURE_OUTLINE_COLOR_OPTIONS, "default": 1},
-
-    {"kind": "slider", "key": "TEXTURE_OUTLINE_STRENGTH",
-     "label": u"纹理描边强度",
-     "options": TEXTURE_OUTLINE_STRENGTH_OPTIONS, "default": 2},
-
     {"kind": "text", "key": "sec_style", "label": u"风格"},
 
     {"kind": "toggle", "key": "CEL", "label": u"卡通渲染", "default": False},
@@ -151,10 +135,6 @@ UI_ROWS = [
     ("toggle", "CEL"),
     ("toggle", "PAPER_WORLD"),
     ("number", "Shininess"),
-    ("header", u"纹理描边"),
-    ("toggle", "ENABLE_TEXTURE_OUTLINES"),
-    ("number", "TEXTURE_OUTLINE_COLOR"),
-    ("number", "TEXTURE_OUTLINE_STRENGTH"),
 ]
 
 UI_NUMBER_KEYS = [key for kind, key in UI_ROWS if kind == "number"]
@@ -244,11 +224,9 @@ def outline_params(values):
     ]
     vector2 = [
         1.0 if bool_value(values["LINEAR_DEPTH"]) else 0.0,
-        1.0 if bool_value(values["ENABLE_TEXTURE_OUTLINES"]) else 0.0,
-        float(option_value(CONTROL_MAP["TEXTURE_OUTLINE_STRENGTH"],
-                           values["TEXTURE_OUTLINE_STRENGTH"])),
-        float(option_value(CONTROL_MAP["TEXTURE_OUTLINE_COLOR"],
-                           values["TEXTURE_OUTLINE_COLOR"])),
+        0.0,
+        0.0,
+        0.0,
     ]
     vector3 = [
         1.0 if bool_value(values["CEL"]) else 0.0,
